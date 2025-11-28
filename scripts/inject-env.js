@@ -46,51 +46,71 @@ function extractPlaceholderKeys() {
  * Load environment variables from .dev.vars (local) or process.env (CI/CD)
  * @param {string} env - Environment name (local, staging, production)
  * @param {Array<string>} keys - Required placeholder keys
- * @returns {Object} Environment variables
+ * @returns {Object} Map of placeholder key -> extracted value
  */
 function loadEnvironmentVariables(env, keys) {
   const vars = {};
+  // Determine prefix based on environment
+  let prefix = "";
+  if (env === "staging") {
+    prefix = "STAGING_";
+  } else if (env === "production") {
+    prefix = "PRODUCTION_";
+  }
+  // For 'local', prefix is empty.
 
-  if (env === "local" || process.env.NODE_ENV === "development") {
-    // Load from .dev.vars file
-    const devVarsPath = path.join(rootDir, ".dev.vars");
+  const isLocalDev =
+    env === "local" || process.env.NODE_ENV === "development" || fs.existsSync(path.join(rootDir, ".dev.vars"));
 
-    if (!fs.existsSync(devVarsPath)) {
-      console.warn(`⚠️  .dev.vars not found at ${devVarsPath}`);
-      if (keys.length > 0) {
-        console.warn("Creating .dev.vars template...");
-        const template = keys.map((key) => `${key}=your_value_here`).join("\n");
-        fs.writeFileSync(devVarsPath, template);
-        console.warn(`✅ Template created. Please fill in values.`);
-      }
-      throw new Error(
-        "Please fill in .dev.vars with your environment variables",
-      );
+  // Try to load from .dev.vars first if it exists, or if env is local
+  // Note: Even if env is 'staging', if running locally we might want to check .dev.vars
+  // The 'isLocalDev' check above is a bit broad, let's refine it.
+  // We check .dev.vars if it exists.
+  const devVarsPath = path.join(rootDir, ".dev.vars");
+  let devVarsContent = null;
+  if (fs.existsSync(devVarsPath)) {
+    devVarsContent = fs.readFileSync(devVarsPath, "utf-8");
+  }
+
+  keys.forEach((key) => {
+    const lookupKey = `${prefix}${key}`;
+    let value = undefined;
+
+    // 1. Try process.env (CI/CD has priority if set)
+    if (process.env[lookupKey]) {
+      value = process.env[lookupKey];
     }
 
-    const content = fs.readFileSync(devVarsPath, "utf-8");
-    const lines = content
-      .split("\n")
-      .filter((line) => line.trim() && !line.trim().startsWith("#"));
+    // 2. If not found and we have .dev.vars, try extracting from there
+    if (value === undefined && devVarsContent) {
+        const lines = devVarsContent
+        .split("\n")
+        .filter((line) => line.trim() && !line.trim().startsWith("#"));
 
-    lines.forEach((line) => {
-      const [key, ...valueParts] = line.split("=");
-      const trimmedKey = key.trim();
-      const value = valueParts.join("=").trim();
+        for (const line of lines) {
+            const [k, ...valueParts] = line.split("=");
+            const trimmedKey = k.trim();
+            if (trimmedKey === lookupKey) {
+                const v = valueParts.join("=").trim();
+                value = v.replace(/^["']|["']$/g, ""); // Remove quotes
+                break;
+            }
+        }
+    }
 
-      if (trimmedKey && keys.includes(trimmedKey)) {
-        // Remove surrounding quotes
-        const stripped = value.replace(/^["']|["']$/g, "");
-        vars[trimmedKey] = stripped;
-      }
-    });
-  } else {
-    // Load from environment variables (CI/CD)
-    keys.forEach((key) => {
-      if (process.env[key]) {
-        vars[key] = process.env[key];
-      }
-    });
+    if (value !== undefined) {
+      vars[key] = value;
+    }
+  });
+
+  // If we are in strictly local mode and missing keys, we might want to create a template
+  if (env === "local" && !fs.existsSync(devVarsPath) && keys.length > 0) {
+      console.warn(`⚠️  .dev.vars not found at ${devVarsPath}`);
+      console.warn("Creating .dev.vars template...");
+      const template = keys.map((key) => `${key}=your_value_here`).join("\n");
+      fs.writeFileSync(devVarsPath, template);
+      console.warn(`✅ Template created. Please fill in values.`);
+      throw new Error("Please fill in .dev.vars with your environment variables");
   }
 
   return vars;
@@ -156,7 +176,7 @@ function injectEnvironmentVariables(env) {
   // Validate all keys are present
   const missingKeys = keys.filter((key) => !vars[key]);
   if (missingKeys.length > 0) {
-    console.error("\n❌ Missing environment variables:");
+    console.error(`\n❌ Missing environment variables (checking for prefix: ${env === 'local' ? 'none' : env.toUpperCase() + '_'}):`);
     for (const key of missingKeys) {
       console.error(`   - ${key}`);
     }

@@ -12,12 +12,7 @@ pipelines:
             # Build & Deploy
             - pnpm build
 
-            # Inject placeholders via script (map repo vars -> unprefixed env vars)
-            - export VALUE_FROM_CLOUDFLARE="$PRODUCTION_VALUE_FROM_CLOUDFLARE"
-            - export KV_ID="$PRODUCTION_KV_ID"
-            - export D1_DB_ID="$PRODUCTION_D1_DB_ID"
-            - export HYPERDRIVE_DB_ID="$PRODUCTION_HYPERDRIVE_DB_ID"
-            - export VECTORIZE_INDEX_NAME="$PRODUCTION_VECTORIZE_INDEX_NAME"
+            # Inject placeholders via script (dynamically prefixed by env)
             - node scripts/inject-env.js production
             - CLOUDFLARE_API_TOKEN="$CLOUDFLARE_API_TOKEN" pnpm exec wrangler deploy
     dev:
@@ -32,11 +27,6 @@ pipelines:
             # Build & Deploy
             - pnpm build
 
-            # Inject placeholders via script (map repo vars -> unprefixed env vars)
-            - export VALUE_FROM_CLOUDFLARE="$STAGING_VALUE_FROM_CLOUDFLARE"
-            - export KV_ID="$STAGING_KV_ID"
-            - export D1_DB_ID="$STAGING_D1_DB_ID"
-            - export HYPERDRIVE_DB_ID="$STAGING_HYPERDRIVE_DB_ID"
-            - export VECTORIZE_INDEX_NAME="$STAGING_VECTORIZE_INDEX_NAME"
+            # Inject placeholders via script (dynamically prefixed by env)
             - node scripts/inject-env.js staging
             - CLOUDFLARE_API_TOKEN="$CLOUDFLARE_API_TOKEN" pnpm exec wrangler deploy

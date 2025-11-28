@@ -9,6 +9,8 @@
     "dev": "react-router dev",
     "preview": "pnpm build && node scripts/inject-env.js local && wrangler dev --local",
     "deploy": "pnpm build && node scripts/inject-env.js local && wrangler deploy",
+    "deploy:staging": "pnpm build && node scripts/inject-env.js staging && wrangler deploy",
+    "deploy:production": "pnpm build && node scripts/inject-env.js production && wrangler deploy",
     "typecheck": "wrangler types && react-router typegen && tsc -b"
   },
   "dependencies": {

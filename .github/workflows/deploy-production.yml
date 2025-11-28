@@ -30,11 +30,11 @@ jobs:
       # ⬅️ Inject environment bindings AFTER build (into build/server/wrangler.json)
       - name: Inject environment bindings into built wrangler.json
         env:
-          VALUE_FROM_CLOUDFLARE: ${{ secrets.PRODUCTION_VALUE_FROM_CLOUDFLARE }}
-          KV_ID: ${{ secrets.PRODUCTION_KV_ID }}
-          D1_DB_ID: ${{ secrets.PRODUCTION_D1_DB_ID }}
-          HYPERDRIVE_DB_ID: ${{ secrets.PRODUCTION_HYPERDRIVE_DB_ID }}
-          VECTORIZE_INDEX_NAME: ${{ secrets.PRODUCTION_VECTORIZE_INDEX_NAME }}
+          PRODUCTION_VALUE_FROM_CLOUDFLARE: ${{ secrets.PRODUCTION_VALUE_FROM_CLOUDFLARE }}
+          PRODUCTION_KV_ID: ${{ secrets.PRODUCTION_KV_ID }}
+          PRODUCTION_D1_DB_ID: ${{ secrets.PRODUCTION_D1_DB_ID }}
+          PRODUCTION_HYPERDRIVE_DB_ID: ${{ secrets.PRODUCTION_HYPERDRIVE_DB_ID }}
+          PRODUCTION_VECTORIZE_INDEX_NAME: ${{ secrets.PRODUCTION_VECTORIZE_INDEX_NAME }}
         run: node scripts/inject-env.js production
 
       - name: Deploy with Wrangler to Production
