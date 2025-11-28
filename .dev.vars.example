@@ -1,0 +1,18 @@
+# Local development environment variables
+# Copy this file to .dev.vars and fill in your values
+# This file is used by the inject-env.js script
+#
+# NOTE: The inject-env.js script automatically discovers placeholder keys
+# from wrangler.jsonc, so any new ${PLACEHOLDER} you add there will be
+# automatically supported here. Just add the corresponding KEY=value pair.
+
+VALUE_FROM_CLOUDFLARE=your_value_here
+KV_ID=your_kv_id_here
+D1_DB_ID=your_d1_db_id_here
+HYPERDRIVE_DB_ID=your_hyperdrive_db_id_here
+VECTORIZE_INDEX_NAME=your_vectorize_index_name_here
+
+# Example of adding a new key:
+# Simply add a new ${MY_CUSTOM_KEY} placeholder in wrangler.jsonc
+# and then add: MY_CUSTOM_KEY=value_here below
+

@@ -1,0 +1,20 @@
+deploy_staging:
+  stage: deploy
+  image: node:24
+
+  before_script:
+    - npm install -g pnpm@latest
+    - pnpm --version
+    - pnpm install
+
+  script:
+    # Build first
+    - pnpm build
+
+    # Then inject placeholders into build output
+    - export VALUE_FROM_CLOUDFLARE="${STAGING_VALUE_FROM_CLOUDFLARE}"
+    - export KV_ID="${STAGING_KV_ID}"
+    - export D1_DB_ID="${STAGING_D1_DB_ID}"
+    - export HYPERDRIVE_DB_ID="${STAGING_HYPERDRIVE_DB_ID}"
+    - export VECTORIZE_INDEX_NAME="${STAGING_VECTORIZE_INDEX_NAME}"
+    - node scripts/inject-env.js staging

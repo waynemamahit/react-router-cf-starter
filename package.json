@@ -1,33 +1,39 @@
 {
-	"name": "react-router-hono-starter",
-	"private": true,
-	"type": "module",
-	"scripts": {
-		"build": "react-router build",
-		"cf-typegen": "wrangler types",
-		"deploy": "pnpm run build && wrangler deploy",
-		"dev": "react-router dev",
-		"postinstall": "npm run cf-typegen",
-		"preview": "pnpm run build && vite preview",
-		"typecheck": "npm run cf-typegen && react-router typegen && tsc -b"
-	},
-	"dependencies": {
-		"isbot": "^5.1.31",
-		"react": "^19.1.1",
-		"react-dom": "^19.1.1",
-		"react-router": "^7.9.2"
-	},
-	"devDependencies": {
-		"@cloudflare/vite-plugin": "^1.13.5",
-		"@react-router/dev": "^7.9.2",
-		"@tailwindcss/vite": "^4.1.13",
-		"@types/node": "^22",
-		"@types/react": "^19.1.13",
-		"@types/react-dom": "^19.1.9",
-		"tailwindcss": "^4.1.13",
-		"typescript": "^5.9.2",
-		"vite": "^7.1.7",
-		"vite-tsconfig-paths": "^5.1.4",
-		"wrangler": "^4.50.0"
-	}
+  "name": "react-router-cf-starter",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "postinstall": "npm run typecheck",
+    "lint": "biome check --write",
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "preview": "pnpm build && node scripts/inject-env.js local && wrangler dev --local",
+    "deploy": "pnpm build && node scripts/inject-env.js local && wrangler deploy",
+    "typecheck": "wrangler types && react-router typegen && tsc -b"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "0.7.5",
+    "hono": "4.10.7",
+    "isbot": "5.1.32",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-router": "7.9.6",
+    "zod": "4.1.13"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.8",
+    "@cloudflare/vite-plugin": "1.15.3",
+    "@cloudflare/vitest-pool-workers": "0.10.11",
+    "@react-router/dev": "7.9.6",
+    "@tailwindcss/vite": "4.1.17",
+    "@types/node": "24",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "tailwindcss": "4.1.17",
+    "typescript": "5.9.3",
+    "vite": "7.2.4",
+    "vite-tsconfig-paths": "5.1.4",
+    "vitest": "4.0.14",
+    "wrangler": "4.51.0"
+  }
 }

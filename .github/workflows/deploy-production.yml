@@ -1,0 +1,43 @@
+name: Deploy Cloudflare Worker to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - name: Use Node.js >=24.11
+        uses: actions/setup-node@v3
+        with:
+          node-version: ">=24.11"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build application
+        run: pnpm build
+
+      # ⬅️ Inject environment bindings AFTER build (into build/server/wrangler.json)
+      - name: Inject environment bindings into built wrangler.json
+        env:
+          VALUE_FROM_CLOUDFLARE: ${{ secrets.PRODUCTION_VALUE_FROM_CLOUDFLARE }}
+          KV_ID: ${{ secrets.PRODUCTION_KV_ID }}
+          D1_DB_ID: ${{ secrets.PRODUCTION_D1_DB_ID }}
+          HYPERDRIVE_DB_ID: ${{ secrets.PRODUCTION_HYPERDRIVE_DB_ID }}
+          VECTORIZE_INDEX_NAME: ${{ secrets.PRODUCTION_VECTORIZE_INDEX_NAME }}
+        run: node scripts/inject-env.js production
+
+      - name: Deploy with Wrangler to Production
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: pnpm exec wrangler deploy
