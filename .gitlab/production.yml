@@ -13,3 +13,4 @@ deploy_production:
 
     # Then inject placeholders into build output
     - node scripts/inject-env.js production
+    - pnpm exec wrangler deploy -c build/server/wrangler.json

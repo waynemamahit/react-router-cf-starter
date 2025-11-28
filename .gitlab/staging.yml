@@ -13,3 +13,4 @@ deploy_staging:
 
     # Then inject placeholders into build output
     - node scripts/inject-env.js staging
+    - pnpm exec wrangler deploy -c build/server/wrangler.json

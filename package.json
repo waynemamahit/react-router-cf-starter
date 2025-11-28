@@ -7,10 +7,10 @@
     "lint": "biome check --write",
     "build": "react-router build",
     "dev": "react-router dev",
-    "preview": "pnpm build && node scripts/inject-env.js local && wrangler dev --local",
-    "deploy": "pnpm build && node scripts/inject-env.js local && wrangler deploy",
-    "deploy:staging": "pnpm build && node scripts/inject-env.js staging && wrangler deploy",
-    "deploy:production": "pnpm build && node scripts/inject-env.js production && wrangler deploy",
+    "preview": "pnpm build && node scripts/inject-env.js local && wrangler dev -c build/server/wrangler.json --local",
+    "deploy": "pnpm build && node scripts/inject-env.js local && wrangler deploy -c build/server/wrangler.json",
+    "deploy:staging": "pnpm build && node scripts/inject-env.js staging && wrangler deploy -c build/server/wrangler.json",
+    "deploy:production": "pnpm build && node scripts/inject-env.js production && wrangler deploy -c build/server/wrangler.json",
     "typecheck": "wrangler types && react-router typegen && tsc -b"
   },
   "dependencies": {

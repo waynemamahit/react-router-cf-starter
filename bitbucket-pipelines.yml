@@ -14,7 +14,7 @@ pipelines:
 
             # Inject placeholders via script (dynamically prefixed by env)
             - node scripts/inject-env.js production
-            - CLOUDFLARE_API_TOKEN="$CLOUDFLARE_API_TOKEN" pnpm exec wrangler deploy
+            - CLOUDFLARE_API_TOKEN="$CLOUDFLARE_API_TOKEN" pnpm exec wrangler deploy -c build/server/wrangler.json
     dev:
       - step:
           name: Deploy Cloudflare Worker to Staging
@@ -29,4 +29,4 @@ pipelines:
 
             # Inject placeholders via script (dynamically prefixed by env)
             - node scripts/inject-env.js staging
-            - CLOUDFLARE_API_TOKEN="$CLOUDFLARE_API_TOKEN" pnpm exec wrangler deploy
+            - CLOUDFLARE_API_TOKEN="$CLOUDFLARE_API_TOKEN" pnpm exec wrangler deploy -c build/server/wrangler.json
