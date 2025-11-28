@@ -216,6 +216,11 @@ function injectEnvironmentVariables(env) {
 
     // Replace recursively
     const updated = replacePlaceholdersRecursive(data, vars);
+
+    // Remove absolute paths that might cause issues in different environments
+    if (updated.configPath) delete updated.configPath;
+    if (updated.userConfigPath) delete updated.userConfigPath;
+
     content = JSON.stringify(updated, null, 2);
 
     console.log("✅ Parsed and processed as JSON");
