@@ -1,0 +1,38 @@
+image: node:20
+
+stages:
+  - deploy
+
+cache:
+  paths:
+    - node_modules/
+
+before_script:
+  - npm install -g pnpm@latest
+  - pnpm install
+
+deploy_staging:
+  stage: deploy
+  script:
+    - pnpm run build
+    - node scripts/generate-wrangler.js staging
+    - export CLOUDFLARE_API_TOKEN=$CLOUDFLARE_API_TOKEN
+    - export CLOUDFLARE_ACCOUNT_ID=$CLOUDFLARE_ACCOUNT_ID
+    - pnpm exec wrangler deploy
+  environment:
+    name: staging
+  only:
+    - staging
+
+deploy_production:
+  stage: deploy
+  script:
+    - pnpm run build
+    - node scripts/generate-wrangler.js production
+    - export CLOUDFLARE_API_TOKEN=$CLOUDFLARE_API_TOKEN
+    - export CLOUDFLARE_ACCOUNT_ID=$CLOUDFLARE_ACCOUNT_ID
+    - pnpm exec wrangler deploy
+  environment:
+    name: production
+  only:
+    - main

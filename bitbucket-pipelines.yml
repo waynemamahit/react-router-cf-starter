@@ -1,0 +1,37 @@
+image: node:20
+
+pipelines:
+  branches:
+    staging:
+      - step:
+          name: Deploy to Staging
+          caches:
+            - node
+          script:
+            - npm install -g pnpm
+            - pnpm install
+            - pnpm run build
+            - node scripts/generate-wrangler.js staging
+            - export CLOUDFLARE_API_TOKEN=$CLOUDFLARE_API_TOKEN
+            - export CLOUDFLARE_ACCOUNT_ID=$CLOUDFLARE_ACCOUNT_ID
+            - pnpm exec wrangler deploy
+          # Define these variables in Repository Settings > Repository variables:
+          # - CLOUDFLARE_API_TOKEN
+          # - CLOUDFLARE_ACCOUNT_ID
+
+    main:
+      - step:
+          name: Deploy to Production
+          caches:
+            - node
+          script:
+            - npm install -g pnpm
+            - pnpm install
+            - pnpm run build
+            - node scripts/generate-wrangler.js production
+            - export CLOUDFLARE_API_TOKEN=$CLOUDFLARE_API_TOKEN
+            - export CLOUDFLARE_ACCOUNT_ID=$CLOUDFLARE_ACCOUNT_ID
+            - pnpm exec wrangler deploy
+          # Define these variables in Repository Settings > Repository variables:
+          # - CLOUDFLARE_API_TOKEN
+          # - CLOUDFLARE_ACCOUNT_ID
