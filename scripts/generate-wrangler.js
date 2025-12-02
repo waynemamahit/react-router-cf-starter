@@ -1,11 +1,11 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
 const args = process.argv.slice(2);
-const env = args[0] || 'local'; // 'local', 'staging', 'production'
-const varsFile = args[1] || '.dev.vars';
+const env = args[0] || "local"; // 'local', 'staging', 'production'
+const varsFile = args[1] || ".dev.vars";
 
-const WRANGLER_JSONC_PATH = path.resolve(process.cwd(), 'wrangler.jsonc');
+const WRANGLER_JSONC_PATH = path.resolve(process.cwd(), "wrangler.jsonc");
 const DEV_VARS_PATH = path.resolve(process.cwd(), varsFile);
 
 console.log(`Generating wrangler.json for environment: ${env}`);
@@ -13,17 +13,17 @@ console.log(`Generating wrangler.json for environment: ${env}`);
 // Determine output paths
 // For CI/CD: generate in build/server (where wrangler looks for it)
 // For local: generate in root
-const BUILD_SERVER_PATH = path.resolve(process.cwd(), 'build/server');
-const WRANGLER_JSON_ROOT = path.resolve(process.cwd(), 'wrangler.json');
-const WRANGLER_JSON_BUILD = path.resolve(BUILD_SERVER_PATH, 'wrangler.json');
+const BUILD_SERVER_PATH = path.resolve(process.cwd(), "build/server");
+const WRANGLER_JSON_ROOT = path.resolve(process.cwd(), "wrangler.json");
+const WRANGLER_JSON_BUILD = path.resolve(BUILD_SERVER_PATH, "wrangler.json");
 
 // 1. Read wrangler.jsonc
-let content = fs.readFileSync(WRANGLER_JSONC_PATH, 'utf-8');
+let content = fs.readFileSync(WRANGLER_JSONC_PATH, "utf-8");
 
 // Remove JSONC comments while preserving strings
 // We need to parse character by character to avoid removing // inside strings
 function stripJsonComments(jsonc) {
-  let result = '';
+  let result = "";
   let inString = false;
   let inSingleLineComment = false;
   let inMultiLineComment = false;
@@ -40,7 +40,7 @@ function stripJsonComments(jsonc) {
       continue;
     }
 
-    if (inString && char === '\\') {
+    if (inString && char === "\\") {
       result += char;
       escapeNext = true;
       continue;
@@ -61,7 +61,7 @@ function stripJsonComments(jsonc) {
 
     // Handle multi-line comment end
     if (inMultiLineComment) {
-      if (char === '*' && nextChar === '/') {
+      if (char === "*" && nextChar === "/") {
         inMultiLineComment = false;
         i++; // Skip the '/'
       }
@@ -70,7 +70,7 @@ function stripJsonComments(jsonc) {
 
     // Handle single-line comment end
     if (inSingleLineComment) {
-      if (char === '\n' || char === '\r') {
+      if (char === "\n" || char === "\r") {
         inSingleLineComment = false;
         result += char; // Preserve the newline
       }
@@ -78,13 +78,13 @@ function stripJsonComments(jsonc) {
     }
 
     // Check for comment starts
-    if (char === '/') {
-      if (nextChar === '/') {
+    if (char === "/") {
+      if (nextChar === "/") {
         inSingleLineComment = true;
         i++; // Skip the second '/'
         continue;
       }
-      if (nextChar === '*') {
+      if (nextChar === "*") {
         inMultiLineComment = true;
         i++; // Skip the '*'
         continue;
@@ -101,7 +101,7 @@ function stripJsonComments(jsonc) {
 content = stripJsonComments(content);
 
 // Remove trailing commas before closing braces/brackets
-content = content.replace(/,(\s*[}\]])/g, '$1');
+content = content.replace(/,(\s*[}\]])/g, "$1");
 
 // 2. Extract placeholders
 const placeholderRegex = /\$\{([A-Z0-9_]+)\}/g;
@@ -115,19 +115,19 @@ while (match !== null) {
 // 3. Resolve values
 const vars = {};
 
-if (env === 'local') {
+if (env === "local") {
   if (fs.existsSync(DEV_VARS_PATH)) {
-    const devVarsContent = fs.readFileSync(DEV_VARS_PATH, 'utf-8');
-    devVarsContent.split('\n').forEach(line => {
+    const devVarsContent = fs.readFileSync(DEV_VARS_PATH, "utf-8");
+    devVarsContent.split("\n").forEach((line) => {
       // Trim the line
       line = line.trim();
 
       // Skip empty lines and comments
-      if (!line || line.startsWith('#')) {
+      if (!line || line.startsWith("#")) {
         return;
       }
 
-      const equalIndex = line.indexOf('=');
+      const equalIndex = line.indexOf("=");
       if (equalIndex === -1) {
         return; // Skip lines without '='
       }
@@ -140,7 +140,9 @@ if (env === 'local') {
       }
     });
   } else {
-    console.warn('.dev.vars file not found. Placeholders might not be resolved.');
+    console.warn(
+      ".dev.vars file not found. Placeholders might not be resolved.",
+    );
   }
 } else {
   // CI/CD: Read from process.env
@@ -149,9 +151,9 @@ if (env === 'local') {
   const prefix = `${env.toUpperCase()}_`;
 
   console.log(`Looking for environment variables with prefix: ${prefix}`);
-  console.log(`Placeholders found: ${Array.from(placeholders).join(', ')}`);
+  console.log(`Placeholders found: ${Array.from(placeholders).join(", ")}`);
 
-  placeholders.forEach(key => {
+  placeholders.forEach((key) => {
     const envKeyWithPrefix = prefix + key;
     let value = process.env[envKeyWithPrefix] || process.env[key];
 
@@ -159,7 +161,12 @@ if (env === 'local') {
     if (value) {
       value = value.trim();
       // Check for invalid/dummy values
-      if (value === '' || value === '***' || value === 'PLACEHOLDER' || value.includes('***')) {
+      if (
+        value === "" ||
+        value === "***" ||
+        value === "PLACEHOLDER" ||
+        value.includes("***")
+      ) {
         console.warn(`⚠ Ignoring invalid value for ${key}: "${value}"`);
         value = undefined;
       }
@@ -173,25 +180,27 @@ if (env === 'local') {
     }
   });
 
-  console.log(`Total variables resolved: ${Object.keys(vars).length}/${placeholders.size}`);
+  console.log(
+    `Total variables resolved: ${Object.keys(vars).length}/${placeholders.size}`,
+  );
 }
 
 // 4. Replace placeholders
 function escapeJsonString(str) {
   return str
-    .replace(/\\/g, '\\\\')   // Escape backslashes
-    .replace(/"/g, '\\"')      // Escape quotes
-    .replace(/\n/g, '\\n')     // Escape newlines
-    .replace(/\r/g, '\\r')     // Escape carriage returns
-    .replace(/\t/g, '\\t')     // Escape tabs
-    .replace(/\f/g, '\\f')     // Escape form feeds
-    .replace(/\b/g, '\\b');    // Escape backspaces
+    .replace(/\\/g, "\\\\") // Escape backslashes
+    .replace(/"/g, '\\"') // Escape quotes
+    .replace(/\n/g, "\\n") // Escape newlines
+    .replace(/\r/g, "\\r") // Escape carriage returns
+    .replace(/\t/g, "\\t") // Escape tabs
+    .replace(/\f/g, "\\f") // Escape form feeds
+    .replace(/\b/g, "\\b"); // Escape backspaces
 }
 
 let finalContent = content;
 const unresolvedPlaceholders = new Set();
 
-placeholders.forEach(key => {
+placeholders.forEach((key) => {
   const value = vars[key];
   if (value !== undefined) {
     // Escape the value to ensure it's valid JSON
@@ -206,16 +215,30 @@ placeholders.forEach(key => {
 
 // 4.5. Remove bindings with unresolved placeholders
 if (unresolvedPlaceholders.size > 0) {
-  console.log(`\nRemoving bindings with unresolved placeholders: ${Array.from(unresolvedPlaceholders).join(', ')}`);
+  console.log(
+    `\nRemoving bindings with unresolved placeholders: ${Array.from(unresolvedPlaceholders).join(", ")}`,
+  );
 
   try {
     const config = JSON.parse(finalContent);
 
+    // Generic function to check for unresolved placeholders in a binding
+    const hasUnresolvedPlaceholder = (binding) => {
+      const bindingString = JSON.stringify(binding);
+      for (const placeholder of unresolvedPlaceholders) {
+        if (bindingString.includes(`\${${placeholder}}`)) {
+          return true;
+        }
+      }
+      return false;
+    };
+
     // Remove KV namespaces with unresolved placeholders
     if (config.kv_namespaces) {
-      config.kv_namespaces = config.kv_namespaces.filter(kv => {
-        const hasUnresolved = unresolvedPlaceholders.has('KV_ID') && JSON.stringify(kv).includes('KV_ID');
-        if (hasUnresolved) console.log(`  ✗ Removed KV namespace binding: ${kv.binding}`);
+      config.kv_namespaces = config.kv_namespaces.filter((kv) => {
+        const hasUnresolved = hasUnresolvedPlaceholder(kv);
+        if (hasUnresolved)
+          console.log(`  ✗ Removed KV namespace binding: ${kv.binding}`);
         return !hasUnresolved;
       });
       if (config.kv_namespaces.length === 0) delete config.kv_namespaces;
@@ -223,9 +246,10 @@ if (unresolvedPlaceholders.size > 0) {
 
     // Remove D1 databases with unresolved placeholders
     if (config.d1_databases) {
-      config.d1_databases = config.d1_databases.filter(d1 => {
-        const hasUnresolved = unresolvedPlaceholders.has('D1_DB_ID') && JSON.stringify(d1).includes('D1_DB_ID');
-        if (hasUnresolved) console.log(`  ✗ Removed D1 database binding: ${d1.binding}`);
+      config.d1_databases = config.d1_databases.filter((d1) => {
+        const hasUnresolved = hasUnresolvedPlaceholder(d1);
+        if (hasUnresolved)
+          console.log(`  ✗ Removed D1 database binding: ${d1.binding}`);
         return !hasUnresolved;
       });
       if (config.d1_databases.length === 0) delete config.d1_databases;
@@ -233,9 +257,10 @@ if (unresolvedPlaceholders.size > 0) {
 
     // Remove Hyperdrive configs with unresolved placeholders
     if (config.hyperdrive) {
-      config.hyperdrive = config.hyperdrive.filter(hd => {
-        const hasUnresolved = unresolvedPlaceholders.has('HYPERDRIVE_DB_ID') && JSON.stringify(hd).includes('HYPERDRIVE_DB_ID');
-        if (hasUnresolved) console.log(`  ✗ Removed Hyperdrive binding: ${hd.binding}`);
+      config.hyperdrive = config.hyperdrive.filter((hd) => {
+        const hasUnresolved = hasUnresolvedPlaceholder(hd);
+        if (hasUnresolved)
+          console.log(`  ✗ Removed Hyperdrive binding: ${hd.binding}`);
         return !hasUnresolved;
       });
       if (config.hyperdrive.length === 0) delete config.hyperdrive;
@@ -243,9 +268,10 @@ if (unresolvedPlaceholders.size > 0) {
 
     // Remove Vectorize indexes with unresolved placeholders
     if (config.vectorize) {
-      config.vectorize = config.vectorize.filter(vz => {
-        const hasUnresolved = unresolvedPlaceholders.has('VECTORIZE_INDEX_NAME') && JSON.stringify(vz).includes('VECTORIZE_INDEX_NAME');
-        if (hasUnresolved) console.log(`  ✗ Removed Vectorize binding: ${vz.binding}`);
+      config.vectorize = config.vectorize.filter((vz) => {
+        const hasUnresolved = hasUnresolvedPlaceholder(vz);
+        if (hasUnresolved)
+          console.log(`  ✗ Removed Vectorize binding: ${vz.binding}`);
         return !hasUnresolved;
       });
       if (config.vectorize.length === 0) delete config.vectorize;
@@ -253,9 +279,13 @@ if (unresolvedPlaceholders.size > 0) {
 
     // Remove environment variables with unresolved placeholders
     if (config.vars) {
-      Object.keys(config.vars).forEach(key => {
+      Object.keys(config.vars).forEach((key) => {
         const value = config.vars[key];
-        if (typeof value === 'string' && value.startsWith('${') && value.endsWith('}')) {
+        if (
+          typeof value === "string" &&
+          value.startsWith("${") &&
+          value.endsWith("}")
+        ) {
           const placeholder = value.slice(2, -1);
           if (unresolvedPlaceholders.has(placeholder)) {
             console.log(`  ✗ Removed environment variable: ${key}`);
@@ -267,9 +297,12 @@ if (unresolvedPlaceholders.size > 0) {
     }
 
     finalContent = JSON.stringify(config, null, 2);
-    console.log('✓ Cleaned up bindings with unresolved placeholders\n');
+    console.log("✓ Cleaned up bindings with unresolved placeholders\n");
   } catch (e) {
-    console.error('Warning: Could not parse JSON to remove unresolved bindings:', e.message);
+    console.error(
+      "Warning: Could not parse JSON to remove unresolved bindings:",
+      e.message,
+    );
   }
 }
 
@@ -289,10 +322,11 @@ try {
 
     // Check what files exist in build/server
     const buildServerFiles = fs.readdirSync(BUILD_SERVER_PATH);
-    console.log(`Files in build/server: ${buildServerFiles.join(', ')}`);
+    console.log(`Files in build/server: ${buildServerFiles.join(", ")}`);
 
     // Find the actual entry point (usually index.js)
-    const entryPoint = buildServerFiles.find(f => f === 'index.js') || './index.js';
+    const entryPoint =
+      buildServerFiles.find((f) => f === "index.js") || "./index.js";
 
     // Update paths for build/server context
     if (buildConfig.main) {
@@ -303,7 +337,7 @@ try {
     // Update assets directory path (if it exists)
     if (buildConfig.assets?.directory) {
       // From build/server, the client assets are at ../client
-      buildConfig.assets.directory = '../client';
+      buildConfig.assets.directory = "../client";
       console.log(`Updated assets directory to: ../client`);
     }
 
@@ -311,14 +345,16 @@ try {
     fs.writeFileSync(WRANGLER_JSON_BUILD, buildServerContent);
     console.log(`✓ Generated ${WRANGLER_JSON_BUILD}`);
   } else {
-    console.log(`ℹ build/server directory not found, skipping ${WRANGLER_JSON_BUILD}`);
+    console.log(
+      `ℹ build/server directory not found, skipping ${WRANGLER_JSON_BUILD}`,
+    );
   }
 
-  console.log('Successfully generated wrangler.json');
+  console.log("Successfully generated wrangler.json");
 } catch (e) {
-  console.error('Error: Generated content is not valid JSON.');
+  console.error("Error: Generated content is not valid JSON.");
   console.error(e);
-  console.log('--- Generated Content ---');
+  console.log("--- Generated Content ---");
   console.log(finalContent);
   process.exit(1);
 }
