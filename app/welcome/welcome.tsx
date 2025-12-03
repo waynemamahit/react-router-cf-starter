@@ -1,7 +1,14 @@
+import type { ReactNode } from "react";
 import logoDark from "./logo-dark.svg";
 import logoLight from "./logo-light.svg";
 
-export function Welcome({ message }: { message: string }) {
+export function Welcome({
+  children,
+  message,
+}: {
+  children: ReactNode;
+  message: string;
+}) {
   return (
     <main className="flex items-center justify-center pt-16 pb-4">
       <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
@@ -41,6 +48,7 @@ export function Welcome({ message }: { message: string }) {
               <li className="self-stretch p-3 leading-normal">{message}</li>
             </ul>
           </nav>
+          {children}
         </div>
       </div>
     </main>
@@ -53,6 +61,9 @@ const resources = [
     text: "React Router Docs",
     icon: (
       <svg
+        role="img"
+        aria-label="react_router_docs"
+        aria-labelledby="react_router_docs"
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="20"
@@ -73,6 +84,9 @@ const resources = [
     text: "Join Discord",
     icon: (
       <svg
+        role="img"
+        aria-label="join_discord"
+        aria-labelledby="join_discord"
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="20"

@@ -3,44 +3,86 @@
  * https://developers.cloudflare.com/workers/wrangler/configuration/
  */
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "react-router-hono-starter",
-	"compatibility_date": "2025-04-04",
-	"main": "./workers/app.ts",
-	"vars": {
-		"VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare"
-	},
-	"observability": {
-		"enabled": true
-	}
-	/**
-	 * Smart Placement
-	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
-	 */
-	// "placement": { "mode": "smart" }
-	/**
-	 * Bindings
-	 * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
-	 * databases, object storage, AI inference, real-time communication and more.
-	 * https://developers.cloudflare.com/workers/runtime-apis/bindings/
-	 */
-	/**
-	 * Environment Variables
-	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
-	 */
-	// "vars": { "MY_VARIABLE": "production_value" }
-	/**
-	 * Note: Use secrets to store sensitive data.
-	 * https://developers.cloudflare.com/workers/configuration/secrets/
-	 */
-	/**
-	 * Static Assets
-	 * https://developers.cloudflare.com/workers/static-assets/binding/
-	 */
-	// "assets": { "directory": "./public/", "binding": "ASSETS" }
-	/**
-	 * Service Bindings (communicate between multiple Workers)
-	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
-	 */
-	// "services": [{ "binding": "MY_SERVICE", "service": "my-service" }]
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "react-router-cf-starter",
+  "compatibility_date": "2025-10-11",
+  "main": "./server/app.ts",
+  "observability": {
+    "enabled": true
+  },
+  "workers_dev": true,
+  "preview_urls": true,
+  /**
+   * Static Assets
+   * https://developers.cloudflare.com/workers/static-assets/binding/
+   */
+  "assets": { "directory": "./build/client", "binding": "ASSETS" },
+  /**
+   * Smart Placement
+   * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
+   */
+  // "placement": { "mode": "smart" }
+  /**
+   * Environment Variables
+   * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
+   */
+  "vars": {
+    "VALUE_FROM_CLOUDFLARE": "${VALUE_FROM_CLOUDFLARE}"
+  },
+  // For more information on KV, see https://developers.cloudflare.com/kv/
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "${KV_ID}"
+    }
+  ],
+  // For more information on D1, see https://developers.cloudflare.com/d1/
+  "d1_databases": [
+    {
+      "binding": "D1",
+      "database_name": "production_db",
+      "database_id": "${D1_DB_ID}"
+    }
+  ],
+  // For more information on Hyperdrive, see https://developers.cloudflare.com/hyperdrive/
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "${HYPERDRIVE_DB_ID}",
+      "localConnectionString": "postgres://postgres:postgres@127.0.0.1:5432/staging_db"
+    }
+  ],
+  // For more information on Durable Objects, see https://developers.cloudflare.com/durable-objects/
+  "migrations": [
+    {
+      "tag": "v1",
+      // "new_classes": ["Counter"], // This is work for only paid plan
+      "new_sqlite_classes": ["Counter"]
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "DO_COUNTER",
+        "class_name": "Counter"
+      }
+    ]
+  },
+  // For more information on Workers AI, see https://developers.cloudflare.com/workers-ai/
+  "ai": {
+    "binding": "AI",
+    "remote": true
+  },
+  // For more information on Vectorize, see https://developers.cloudflare.com/vectorize/
+  "vectorize": [
+    {
+      "binding": "VECTORIZE",
+      "index_name": "${VECTORIZE_INDEX_NAME}",
+      "remote": true
+    }
+  ],
+  // For more information on Browser Rendering, see https://developers.cloudflare.com/browser-rendering/
+  "browser": {
+    "binding": "BROWSER"
+  }
 }
