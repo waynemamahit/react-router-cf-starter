@@ -1,0 +1,31 @@
+image: node:24.11.0-alpine
+
+pipelines:
+  branches:
+    dev:
+      - step:
+          name: Deploy to Staging
+          script:
+            - node --version
+            - npm install -g pnpm
+            - pnpm install
+            - pnpm run build
+            - node scripts/gen-wrangler.js staging
+            - export CLOUDFLARE_API_TOKEN=$CLOUDFLARE_API_TOKEN
+            - pnpm exec wrangler deploy
+          # Define these secrets in Repository Settings > Repository variables:
+          # - CLOUDFLARE_API_TOKEN
+
+    main:
+      - step:
+          name: Deploy to Production
+          script:
+            - node --version
+            - npm install -g pnpm
+            - pnpm install
+            - pnpm run build
+            - node scripts/gen-wrangler.js production
+            - export CLOUDFLARE_API_TOKEN=$CLOUDFLARE_API_TOKEN
+            - pnpm exec wrangler deploy
+          # Define these secrets in Repository Settings > Repository variables:
+          # - CLOUDFLARE_API_TOKEN

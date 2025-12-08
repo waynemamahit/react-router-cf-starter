@@ -1,43 +1,66 @@
-# Welcome to React Router!
+# react-router-cf-starter
 
-A modern, production-ready template for building full-stack React applications using React Router.
+A full-stack React Router v7 starter tailored for Cloudflare Workers. This template provides server-side rendering (SSR) on Cloudflare, client hydration, and example integrations for Durable Objects, KV, D1, Hyperdrive, and Vectorize.
 
-## Features
+## Key Features
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+- **Server-side rendering** with React Router v7 and a worker-based server entry (`app/entry.server.tsx`).
+- **Cloudflare Workers + Wrangler** deployment scaffolding.
+- **Durable Objects** example (high-performance counter) in `server/durable_objects`.
+- **KV, D1, Hyperdrive, Vectorize** examples and bindings support.
+- **TypeScript** by default.
+- **Vite** dev server with HMR for client-side development.
 
-## Getting Started
+## Project Layout
 
-### Installation
+- `app/` — React app source (routes, root, CSS).
+- `build/` — Output artifacts for production (client + server bundles).
+- `public/` — Static assets served by the worker.
+- `server/` — Worker server entry, Durable Object code, API routes.
+- `wrangler.jsonc` — Worker configuration for Cloudflare.
 
-Install the dependencies:
+## Prerequisites
+
+- Node.js (recommended 20+)
+- `pnpm` (this repo uses `pnpm` in scripts)
+- Wrangler CLI (`npm i -g wrangler`) for Cloudflare deployments
+- Docker (only if you want to run the local PostgreSQL used by Hyperdrive)
+
+## Installation
+
+Install dependencies with `pnpm`:
 
 ```bash
-npm install
+pnpm install
 ```
 
-### Development
+## Development
 
-Start the development server with HMR:
+Run the Vite dev server and local server proxy (project scripts use `pnpm`):
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+This starts the client dev server with HMR and the server entry used for SSR. By default the client is available at `http://localhost:5173` and SSR is routed through the local server process.
 
-## Previewing the Production Build
+If you rely on Cloudflare staging resources locally (Hyperdrive/D1/KV), follow the local setup in `GUIDE.md` and populate `.dev.vars` before running.
 
-Preview the production build locally:
+## Previewing the Production Build Locally
+
+The repo includes scripts to build the client and server and preview using Wrangler with the staging environment bindings.
 
 ```bash
-npm run preview
+pnpm build
+pnpm preview
+```
+
+`pnpm preview` uses the built server bundle in `build/server` and serves it locally in a way similar to Cloudflare Workers for final verification. It generates a temporary `wrangler.json` from your `.dev.vars`.
+
+To preview with remote resources:
+
+```bash
+pnpm preview:remote
 ```
 
 ## Building for Production
@@ -45,35 +68,44 @@ npm run preview
 Create a production build:
 
 ```bash
-npm run build
+pnpm build
 ```
 
 ## Deployment
 
-Deployment is done using the Wrangler CLI.
+Deployment uses the Wrangler CLI. Set up a Cloudflare API token and add it to your CI/CD provider (see `GUIDE.md`).
+These scripts run the build, generate the environment-specific `wrangler.json` (injecting variables from CI/CD), and deploy using that configuration.
 
-To build and deploy directly to production:
+For preview deployments and version management you can use:
 
-```sh
-npm run deploy
-```
-
-To deploy a preview URL:
-
-```sh
+```bash
 npx wrangler versions upload
-```
-
-You can then promote a version to production after verification or roll it out progressively.
-
-```sh
 npx wrangler versions deploy
 ```
 
-## Styling
+## Local Hyperdrive (Postgres) for Development
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+This project can use Hyperdrive which requires PostgreSQL for local development. A `docker-compose.yml` is included.
+
+```bash
+docker-compose up -d
+```
+
+Configure your `.dev.vars` with staging resource IDs (see `GUIDE.md`) before running preview/dev commands that interact with Cloudflare-managed resources.
+
+## Where to Look
+
+- Server SSR entry: `app/entry.server.tsx`
+- Routes: `app/routes.ts` and `app/routes/*.tsx`
+- Worker server + DOs: `server/` and `server/durable_objects`
+- Built artifacts: `build/`
+
+## Need Help?
+
+If you want, I can:
+- Run a quick repo scan to verify scripts and `package.json`.
+- Update CI examples for GitHub Actions/Bitbucket pipelines.
 
 ---
 
-Built with ❤️ using React Router.
+Happy hacking — open an issue or ask if you want a tailored CI/CD example for your provider.
