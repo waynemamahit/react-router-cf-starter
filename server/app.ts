@@ -33,8 +33,10 @@ app.all("*", async (c) => {
   });
 });
 
-export default {
+const handler: ExportedHandler<Env> = {
   fetch: app.fetch,
 };
+
+export default handler;
 
 export { Counter } from "./durable_objects/counter.do";
