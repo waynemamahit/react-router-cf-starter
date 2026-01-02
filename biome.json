@@ -6,7 +6,8 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignoreUnknown": false
+    "ignoreUnknown": false,
+    "includes": ["coverage", "node_modules", "build", ".mf", ".wrangler"]
   },
   "formatter": {
     "enabled": true,

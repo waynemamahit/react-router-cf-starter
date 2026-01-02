@@ -2,6 +2,7 @@
 .env
 /node_modules/
 *.tsbuildinfo
+/coverage
 
 # React Router
 /.react-router/
