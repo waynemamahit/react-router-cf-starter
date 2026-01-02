@@ -208,3 +208,166 @@ The canvas SHALL update dimension labels automatically during all shape manipula
 - **THEN** dimension labels update in real-time to reflect current dimensions
 - **AND** labels are formatted as "W: {width}, H: {height}"
 - **AND** dimensions are displayed in pixels
+
+### Requirement: Drawing Save Functionality
+The canvas SHALL provide functionality to save the current drawing state with a user-specified name.
+
+#### Scenario: Save button available
+- **WHEN** user is on the canvas page
+- **THEN** a save button or control is visible and accessible
+- **AND** the control allows the user to specify a name for the drawing
+
+#### Scenario: Save drawing with name
+- **WHEN** user enters a drawing name and triggers save
+- **THEN** the current canvas state (all points and rectangles) is saved to the server
+- **AND** the drawing is assigned a unique identifier
+- **AND** the save timestamp is recorded
+- **AND** the user receives confirmation of successful save
+
+#### Scenario: Save empty canvas
+- **WHEN** user attempts to save a canvas with no shapes
+- **THEN** the save operation is allowed
+- **AND** an empty drawing is saved with the specified name
+
+#### Scenario: Save updates drawings list
+- **WHEN** a drawing is successfully saved
+- **THEN** the saved drawings list is refreshed to include the new drawing
+- **AND** the new drawing appears in the list with its name and timestamp
+
+### Requirement: Saved Drawings List Display
+The canvas SHALL display a list of all saved drawings with their metadata.
+
+#### Scenario: Display saved drawings list
+- **WHEN** user is on the canvas page
+- **THEN** a list of all saved drawings is visible
+- **AND** each list item shows the drawing name
+- **AND** each list item shows the creation timestamp
+- **AND** the list is sorted by creation date (newest first)
+
+#### Scenario: Empty drawings list
+- **WHEN** no drawings have been saved
+- **THEN** an appropriate message is displayed indicating no saved drawings exist
+- **AND** the save functionality remains available
+
+#### Scenario: List updates after save
+- **WHEN** a new drawing is saved
+- **THEN** the drawings list automatically updates to include the new item
+- **AND** the new item appears at the top of the list
+
+### Requirement: Drawing Load Functionality
+The canvas SHALL allow users to load a previously saved drawing by clicking on it in the list.
+
+#### Scenario: Click to load drawing
+- **WHEN** user clicks on a saved drawing in the list
+- **THEN** the drawing data is fetched from the server
+- **AND** the canvas state is replaced with the loaded drawing's points and rectangles
+- **AND** all previously displayed shapes are removed
+- **AND** the loaded shapes are rendered on the canvas
+
+#### Scenario: Load preserves shape properties
+- **WHEN** a drawing is loaded
+- **THEN** all points are restored with their exact x and y coordinates
+- **AND** all rectangles are restored with their exact position and dimensions
+- **AND** shapes maintain their visual appearance and behavior
+
+#### Scenario: Load drawing with no shapes
+- **WHEN** user loads an empty drawing (no points or rectangles)
+- **THEN** the canvas is cleared of all shapes
+- **AND** the canvas displays the empty state message
+
+### Requirement: Backend API for Drawings List
+The system SHALL provide a REST API endpoint to retrieve all saved drawings metadata.
+
+#### Scenario: GET drawings list
+- **WHEN** a GET request is made to `/api/v1/drawings`
+- **THEN** the API returns HTTP 200 status
+- **AND** the response body contains a JSON array of drawing summaries
+- **AND** each summary includes id, name, and createdAt fields
+- **AND** the list is ordered by creation date descending
+
+#### Scenario: Empty drawings collection
+- **WHEN** a GET request is made to `/api/v1/drawings` and no drawings exist
+- **THEN** the API returns HTTP 200 status
+- **AND** the response body contains an empty JSON array
+
+### Requirement: Backend API for Drawing Creation
+The system SHALL provide a REST API endpoint to create and save new drawings.
+
+#### Scenario: POST new drawing
+- **WHEN** a POST request is made to `/api/v1/drawings` with valid drawing data
+- **THEN** the API returns HTTP 201 status
+- **AND** a unique identifier is assigned to the drawing
+- **AND** the drawing is saved to persistent storage on the server
+- **AND** the response body contains the complete saved drawing including the assigned id
+
+#### Scenario: Save drawing data format
+- **WHEN** a drawing is saved via the API
+- **THEN** the saved data contains the drawing name
+- **AND** the data contains the creation timestamp in ISO 8601 format
+- **AND** the data contains the complete array of points with id, x, and y coordinates
+- **AND** the data contains the complete array of rectangles with id, startX, startY, width, and height
+
+#### Scenario: Invalid drawing data
+- **WHEN** a POST request is made with missing or invalid required fields
+- **THEN** the API returns HTTP 400 status
+- **AND** the response includes an error message describing the validation failure
+
+### Requirement: Backend API for Drawing Retrieval
+The system SHALL provide a REST API endpoint to retrieve a specific saved drawing by its identifier.
+
+#### Scenario: GET specific drawing
+- **WHEN** a GET request is made to `/api/v1/drawings/:id` with a valid drawing ID
+- **THEN** the API returns HTTP 200 status
+- **AND** the response body contains the complete drawing data
+- **AND** the response includes all points and rectangles from the saved drawing
+
+#### Scenario: Drawing not found
+- **WHEN** a GET request is made to `/api/v1/drawings/:id` with a non-existent ID
+- **THEN** the API returns HTTP 404 status
+- **AND** the response includes an error message indicating the drawing was not found
+
+#### Scenario: Invalid drawing ID format
+- **WHEN** a GET request is made with an invalid ID format
+- **THEN** the API returns HTTP 400 status
+- **AND** the response includes an error message about the invalid ID
+
+### Requirement: Drawing Storage with Cloudflare KV
+The system SHALL persist drawings using Cloudflare KV storage for serverless compatibility.
+
+#### Scenario: KV storage keys
+- **WHEN** a drawing is saved
+- **THEN** the drawing data is stored in KV with a key based on the unique ID
+- **AND** the key uses the format `drawing:{uuid}`
+- **AND** an index of all drawing IDs is maintained in KV under the key `drawings:index`
+
+#### Scenario: KV data structure
+- **WHEN** a drawing is stored in KV
+- **THEN** the value contains valid JSON matching the SavedDrawing interface
+- **AND** the JSON includes id, name, createdAt, points, and rectangles fields
+
+#### Scenario: KV read on load
+- **WHEN** a drawing is requested by ID
+- **THEN** the corresponding value is read from KV storage
+- **AND** the JSON is parsed and validated before returning
+- **AND** KV read errors are handled gracefully with appropriate error responses
+
+### Requirement: Drawing Data Validation
+The system SHALL validate drawing data on both save and load operations.
+
+#### Scenario: Validate drawing name
+- **WHEN** saving a drawing
+- **THEN** the drawing name is required and must not be empty
+- **AND** the name must be a string
+- **AND** excessively long names are rejected (max 200 characters)
+
+#### Scenario: Validate points array
+- **WHEN** saving or loading drawing data
+- **THEN** points must be an array
+- **AND** each point must have numeric id, x, and y properties
+- **AND** coordinate values must be finite numbers
+
+#### Scenario: Validate rectangles array
+- **WHEN** saving or loading drawing data
+- **THEN** rectangles must be an array
+- **AND** each rectangle must have numeric id, startX, startY, width, and height properties
+- **AND** all dimension values must be finite numbers

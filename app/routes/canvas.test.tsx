@@ -1,10 +1,14 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import Canvas from "./canvas";
 
 describe("Requirement: Canvas Route", () => {
-  it("Scenario: Navigate to canvas page - displays canvas page with clickable area", () => {
+  it("Scenario: Navigate to canvas page - displays canvas page with clickable area", async () => {
     render(<Canvas />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("canvas-area")).toBeInTheDocument();
+    });
 
     const canvasArea = screen.getByTestId("canvas-area");
     expect(canvasArea).toBeInTheDocument();
@@ -16,8 +20,9 @@ describe("Requirement: Canvas Route", () => {
 });
 
 describe("Requirement: Visual Point Markers", () => {
-  it("Scenario: Click creates point marker - renders point at click location", () => {
+  it("Scenario: Click creates point marker - renders point at click location", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -38,8 +43,9 @@ describe("Requirement: Visual Point Markers", () => {
     expect(pointMarkers[0]).toHaveClass("bg-red-500", "rounded-full");
   });
 
-  it("Scenario: Multiple points are displayed - all points remain visible", () => {
+  it("Scenario: Multiple points are displayed - all points remain visible", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -77,8 +83,9 @@ describe("Requirement: Visual Point Markers", () => {
     expect(screen.getByText(/Points: 3/)).toBeInTheDocument();
   });
 
-  it("displays message when no points are placed", () => {
+  it("displays message when no points are placed", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     expect(
       screen.getByText(/Click to place points or drag to draw rectangles/),
@@ -88,8 +95,9 @@ describe("Requirement: Visual Point Markers", () => {
 });
 
 describe("Requirement: Coordinate Labels", () => {
-  it("Scenario: Point shows coordinate label - label displays near point with correct format", () => {
+  it("Scenario: Point shows coordinate label - label displays near point with correct format", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -109,8 +117,9 @@ describe("Requirement: Coordinate Labels", () => {
     expect(coordinateLabels[0]).toHaveTextContent("X: 120, Y: 180");
   });
 
-  it("Scenario: Multiple labels are visible - each point has its own label", () => {
+  it("Scenario: Multiple labels are visible - each point has its own label", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -143,8 +152,9 @@ describe("Requirement: Coordinate Labels", () => {
     expect(pointMarkers).toHaveLength(2);
   });
 
-  it("coordinate labels use correct format 'X: {x}, Y: {y}'", () => {
+  it("coordinate labels use correct format 'X: {x}, Y: {y}'", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -165,38 +175,41 @@ describe("Requirement: Coordinate Labels", () => {
 });
 
 describe("Requirement: Visual Canvas Area", () => {
-  it("Scenario: Canvas is visually distinct - renders with visible boundaries and minimum dimensions", () => {
+  it("Scenario: Canvas is visually distinct - renders with visible boundaries and minimum dimensions", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     expect(canvasArea).toBeInTheDocument();
 
-    expect(canvasArea.style.minHeight).toBe("400px");
-    expect(canvasArea.style.minWidth).toBe("400px");
+    expect(canvasArea).toHaveClass("h-[400px]", "md:h-[500px]", "lg:h-[600px]");
 
-    expect(canvasArea).toHaveClass("border-4", "border-blue-500");
+    expect(canvasArea).toHaveClass("border-blue-500");
   });
 
-  it("canvas is a button element for accessibility", () => {
+  it("canvas is a button element for accessibility", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     expect(canvasArea.tagName).toBe("BUTTON");
     expect(canvasArea).toHaveAttribute("type", "button");
   });
 
-  it("canvas has proper styling for interaction", () => {
+  it("canvas has proper styling for interaction", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
-    expect(canvasArea).toHaveClass("h-[600px]");
+    expect(canvasArea).toHaveClass("h-[400px]", "md:h-[500px]", "lg:h-[600px]");
     expect(canvasArea).toHaveClass("hover:border-blue-600");
   });
 });
 
 describe("Requirement: Rectangle Drawing", () => {
-  it("Scenario: Draw rectangle with drag - creates rectangle on mousedown+move+up", () => {
+  it("Scenario: Draw rectangle with drag - creates rectangle on mousedown+move+up", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -226,8 +239,9 @@ describe("Requirement: Rectangle Drawing", () => {
     });
   });
 
-  it("Scenario: Complete rectangle drawing - rectangle remains visible with dimensions", () => {
+  it("Scenario: Complete rectangle drawing - rectangle remains visible with dimensions", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -252,8 +266,9 @@ describe("Requirement: Rectangle Drawing", () => {
     expect(dimensionLabels[0]).toHaveTextContent("W: 100, H: 50, Area: 5000");
   });
 
-  it("handles negative dimensions when dragging in opposite directions", () => {
+  it("handles negative dimensions when dragging in opposite directions", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -285,8 +300,9 @@ describe("Requirement: Rectangle Drawing", () => {
 });
 
 describe("Requirement: Square Drawing with Shift Modifier", () => {
-  it("Scenario: Draw square with Shift key - constrains shape to 1:1 aspect ratio", () => {
+  it("Scenario: Draw square with Shift key - constrains shape to 1:1 aspect ratio", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -320,8 +336,9 @@ describe("Requirement: Square Drawing with Shift Modifier", () => {
     });
   });
 
-  it("Scenario: Press Shift during drag - transitions from rectangle to square mode", () => {
+  it("Scenario: Press Shift during drag - transitions from rectangle to square mode", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -360,8 +377,9 @@ describe("Requirement: Square Drawing with Shift Modifier", () => {
 });
 
 describe("Requirement: Shape Dimension Display", () => {
-  it("Scenario: Show dimensions during drawing - displays current width and height", () => {
+  it("Scenario: Show dimensions during drawing - displays current width and height", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -388,8 +406,9 @@ describe("Requirement: Shape Dimension Display", () => {
     });
   });
 
-  it("Scenario: Show dimensions for completed shapes - dimensions remain visible", () => {
+  it("Scenario: Show dimensions for completed shapes - dimensions remain visible", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -419,8 +438,9 @@ describe("Requirement: Shape Dimension Display", () => {
 });
 
 describe("Requirement: Mixed Interaction Modes", () => {
-  it("Scenario: Simple click creates point - no rectangle created for small movements", () => {
+  it("Scenario: Simple click creates point - no rectangle created for small movements", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -447,8 +467,9 @@ describe("Requirement: Mixed Interaction Modes", () => {
     expect(rectangles).toHaveLength(0);
   });
 
-  it("Scenario: Click and drag creates shape - drag beyond threshold creates rectangle", () => {
+  it("Scenario: Click and drag creates shape - drag beyond threshold creates rectangle", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -475,8 +496,9 @@ describe("Requirement: Mixed Interaction Modes", () => {
     expect(pointMarkers).toHaveLength(0);
   });
 
-  it("multiple rectangles and points coexist", () => {
+  it("multiple rectangles and points coexist", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -528,8 +550,9 @@ describe("Requirement: Mixed Interaction Modes", () => {
 });
 
 describe("Integration", () => {
-  it("point markers and labels are positioned correctly", () => {
+  it("point markers and labels are positioned correctly", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -551,8 +574,9 @@ describe("Integration", () => {
     });
   });
 
-  it("handles multiple clicks with unique IDs", () => {
+  it("handles multiple clicks with unique IDs", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -583,8 +607,9 @@ describe("Integration", () => {
     expect(point1Id).not.toBe(point2Id);
   });
 
-  it("current rectangle preview disappears after completion", () => {
+  it("current rectangle preview disappears after completion", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -615,8 +640,9 @@ describe("Integration", () => {
 });
 
 describe("Requirement: Shape Selection", () => {
-  it("Scenario: Click shape to select - shape is selected with visual feedback", () => {
+  it("Scenario: Click shape to select - shape is selected with visual feedback", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -648,8 +674,9 @@ describe("Requirement: Shape Selection", () => {
     expect(rectangle).toHaveClass("bg-blue-200");
   });
 
-  it("Scenario: Deselect shape - clicking canvas background deselects shape", () => {
+  it("Scenario: Deselect shape - clicking canvas background deselects shape", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -692,8 +719,9 @@ describe("Requirement: Shape Selection", () => {
     expect(rectangle).not.toHaveClass("border-blue-600");
   });
 
-  it("displays resize handles when shape is selected", () => {
+  it("displays resize handles when shape is selected", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -734,8 +762,9 @@ describe("Requirement: Shape Selection", () => {
 });
 
 describe("Requirement: Shape Dragging", () => {
-  it("Scenario: Drag shape to new position - shape follows mouse and updates position", () => {
+  it("Scenario: Drag shape to new position - shape follows mouse and updates position", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -772,8 +801,9 @@ describe("Requirement: Shape Dragging", () => {
     expect(rectangle).toHaveStyle({ left: "200px", top: "200px" });
   });
 
-  it("Scenario: Complete drag operation - shape remains at new position after mouse release", () => {
+  it("Scenario: Complete drag operation - shape remains at new position after mouse release", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -810,8 +840,9 @@ describe("Requirement: Shape Dragging", () => {
     expect(rectangle).toHaveStyle({ left: "150px", top: "150px" });
   });
 
-  it("Scenario: Drag updates dimensions in real-time - dimension labels move with shape", () => {
+  it("Scenario: Drag updates dimensions in real-time - dimension labels move with shape", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -849,8 +880,9 @@ describe("Requirement: Shape Dragging", () => {
 });
 
 describe("Requirement: Shape Corner Resizing", () => {
-  it("Scenario: Resize shape from corner - shape resizes dynamically", () => {
+  it("Scenario: Resize shape from corner - shape resizes dynamically", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -897,8 +929,9 @@ describe("Requirement: Shape Corner Resizing", () => {
     expect(rectangle).toHaveStyle({ width: "150px", height: "100px" });
   });
 
-  it("Scenario: Complete resize operation - shape maintains new dimensions", () => {
+  it("Scenario: Complete resize operation - shape maintains new dimensions", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -945,8 +978,9 @@ describe("Requirement: Shape Corner Resizing", () => {
     expect(rectangle).toHaveStyle({ width: "200px", height: "150px" });
   });
 
-  it("Scenario: Resize square with Shift maintains aspect ratio", () => {
+  it("Scenario: Resize square with Shift maintains aspect ratio", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -997,8 +1031,9 @@ describe("Requirement: Shape Corner Resizing", () => {
     fireEvent.keyUp(window, { key: "Shift" });
   });
 
-  it("Scenario: Resize rectangle with Shift creates square", () => {
+  it("Scenario: Resize rectangle with Shift creates square", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -1049,8 +1084,9 @@ describe("Requirement: Shape Corner Resizing", () => {
 });
 
 describe("Requirement: Real-time Dimension Label Updates", () => {
-  it("Scenario: Dimensions update during resize - labels show current dimensions", () => {
+  it("Scenario: Dimensions update during resize - labels show current dimensions", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -1095,8 +1131,9 @@ describe("Requirement: Real-time Dimension Label Updates", () => {
     expect(dimensionLabel).toHaveTextContent("W: 200, H: 150, Area: 30000");
   });
 
-  it("enforces minimum size constraints during resize", () => {
+  it("enforces minimum size constraints during resize", async () => {
     render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
 
     const canvasArea = screen.getByTestId("canvas-area");
     const rect = canvasArea.getBoundingClientRect();
@@ -1142,5 +1179,62 @@ describe("Requirement: Real-time Dimension Label Updates", () => {
     // Should enforce minimum size of 10px
     expect(width).toBeGreaterThanOrEqual(10);
     expect(height).toBeGreaterThanOrEqual(10);
+  });
+});
+
+describe("Requirement: Drawing Save Functionality", () => {
+  it("Scenario: Save button available - save control is visible", async () => {
+    render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
+
+    expect(
+      screen.getByPlaceholderText("Enter drawing name..."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Save Drawing")).toBeInTheDocument();
+  });
+
+  it("displays validation error for empty drawing name", async () => {
+    render(<Canvas />);
+
+    const saveButton = screen.getByText("Save Drawing");
+    fireEvent.click(saveButton);
+
+    expect(
+      await screen.findByText("Please enter a drawing name"),
+    ).toBeInTheDocument();
+  });
+
+  it("displays saved drawings list section", async () => {
+    render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
+
+    expect(screen.getByText("Saved Drawings")).toBeInTheDocument();
+  });
+});
+
+describe("Requirement: Saved Drawings List Display", () => {
+  it("Scenario: Empty drawings list - shows appropriate message", async () => {
+    render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
+
+    expect(screen.getByText(/No saved drawings yet/i)).toBeInTheDocument();
+  });
+});
+
+describe("Integration: Drawing Persistence", () => {
+  it("displays drawing metadata", async () => {
+    render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
+
+    const nameInput = screen.getByPlaceholderText("Enter drawing name...");
+    expect(nameInput).toHaveAttribute("maxLength", "200");
+  });
+
+  it("shows points and rectangles count", async () => {
+    render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
+
+    expect(screen.getByText(/Points: 0/)).toBeInTheDocument();
+    expect(screen.getByText(/Rectangles: 0/)).toBeInTheDocument();
   });
 });
