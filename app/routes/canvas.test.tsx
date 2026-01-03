@@ -1238,3 +1238,231 @@ describe("Integration: Drawing Persistence", () => {
     expect(screen.getByText(/Rectangles: 0/)).toBeInTheDocument();
   });
 });
+
+describe("Requirement: Shape Deletion via Keyboard", () => {
+  it("Scenario: Delete selected point with Delete key - removes point from canvas", async () => {
+    render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
+
+    const canvasArea = screen.getByTestId("canvas-area");
+    const rect = canvasArea.getBoundingClientRect();
+
+    fireEvent.mouseDown(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+    fireEvent.mouseUp(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+
+    expect(screen.getByText(/Points: 1/)).toBeInTheDocument();
+
+    fireEvent.mouseDown(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+
+    fireEvent.keyDown(window, { key: "Delete" });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Points: 0/)).toBeInTheDocument();
+    });
+  });
+
+  it("Scenario: Delete selected rectangle with Delete key - removes rectangle from canvas", async () => {
+    render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
+
+    const canvasArea = screen.getByTestId("canvas-area");
+    const rect = canvasArea.getBoundingClientRect();
+
+    fireEvent.mouseDown(canvasArea, {
+      clientX: rect.left + 50,
+      clientY: rect.top + 50,
+    });
+    fireEvent.mouseMove(canvasArea, {
+      clientX: rect.left + 150,
+      clientY: rect.top + 150,
+    });
+    fireEvent.mouseUp(canvasArea, {
+      clientX: rect.left + 150,
+      clientY: rect.top + 150,
+    });
+
+    expect(screen.getByText(/Rectangles: 1/)).toBeInTheDocument();
+
+    fireEvent.mouseDown(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+
+    fireEvent.keyDown(window, { key: "Delete" });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Rectangles: 0/)).toBeInTheDocument();
+    });
+  });
+
+  it("Scenario: Delete key with no selection - no action occurs", async () => {
+    render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
+
+    const canvasArea = screen.getByTestId("canvas-area");
+    const rect = canvasArea.getBoundingClientRect();
+
+    fireEvent.mouseDown(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+    fireEvent.mouseUp(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+
+    expect(screen.getByText(/Points: 1/)).toBeInTheDocument();
+
+    fireEvent.mouseDown(canvasArea, {
+      clientX: rect.left + 300,
+      clientY: rect.top + 300,
+    });
+
+    fireEvent.keyDown(window, { key: "Delete" });
+
+    expect(screen.getByText(/Points: 1/)).toBeInTheDocument();
+  });
+});
+
+describe("Requirement: Shape Deletion via UI Control", () => {
+  it("Scenario: Delete button visibility - button appears when shape is selected", async () => {
+    render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
+
+    const canvasArea = screen.getByTestId("canvas-area");
+    const rect = canvasArea.getBoundingClientRect();
+
+    expect(screen.queryByTestId("delete-shape-button")).not.toBeInTheDocument();
+
+    fireEvent.mouseDown(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+    fireEvent.mouseUp(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+
+    fireEvent.mouseDown(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("delete-shape-button")).toBeInTheDocument();
+    });
+  });
+
+  it("Scenario: Click delete button removes shape - shape is deleted from canvas", async () => {
+    render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
+
+    const canvasArea = screen.getByTestId("canvas-area");
+    const rect = canvasArea.getBoundingClientRect();
+
+    fireEvent.mouseDown(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+    fireEvent.mouseUp(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+
+    expect(screen.getByText(/Points: 1/)).toBeInTheDocument();
+
+    fireEvent.mouseDown(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("delete-shape-button")).toBeInTheDocument();
+    });
+
+    const deleteButton = screen.getByTestId("delete-shape-button");
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Points: 0/)).toBeInTheDocument();
+    });
+  });
+});
+
+describe("Requirement: Shape Deletion Feedback", () => {
+  it("Scenario: Deletion success message - displays confirmation message", async () => {
+    render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
+
+    const canvasArea = screen.getByTestId("canvas-area");
+    const rect = canvasArea.getBoundingClientRect();
+
+    fireEvent.mouseDown(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+    fireEvent.mouseUp(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+
+    fireEvent.mouseDown(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+
+    fireEvent.keyDown(window, { key: "Delete" });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Point deleted/)).toBeInTheDocument();
+    });
+  });
+
+  it("Scenario: Update shape count after deletion - count reflects remaining shapes", async () => {
+    render(<Canvas />);
+    await waitFor(() => screen.getByTestId("canvas-area"));
+
+    const canvasArea = screen.getByTestId("canvas-area");
+    const rect = canvasArea.getBoundingClientRect();
+
+    fireEvent.mouseDown(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+    fireEvent.mouseUp(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+
+    fireEvent.mouseDown(canvasArea, {
+      clientX: rect.left + 200,
+      clientY: rect.top + 200,
+    });
+    fireEvent.mouseUp(canvasArea, {
+      clientX: rect.left + 200,
+      clientY: rect.top + 200,
+    });
+
+    expect(screen.getByText(/Points: 2/)).toBeInTheDocument();
+
+    fireEvent.mouseDown(canvasArea, {
+      clientX: rect.left + 100,
+      clientY: rect.top + 100,
+    });
+
+    fireEvent.keyDown(window, { key: "Delete" });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Points: 1/)).toBeInTheDocument();
+    });
+  });
+});

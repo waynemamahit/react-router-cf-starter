@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useOptimistic, useRef, useState, useTransition } from "react";
 import type {
   DrawingSummary,
   DrawingsResponse,
@@ -19,13 +19,154 @@ export function meta() {
   ];
 }
 
+function calculateRectangle(
+  startX: number,
+  startY: number,
+  currentX: number,
+  currentY: number,
+  constrainSquare: boolean,
+): Rectangle {
+  let width = currentX - startX;
+  let height = currentY - startY;
+
+  if (constrainSquare) {
+    const size = Math.min(Math.abs(width), Math.abs(height));
+    width = width >= 0 ? size : -size;
+    height = height >= 0 ? size : -size;
+  }
+
+  return {
+    id: Date.now(),
+    startX,
+    startY,
+    width,
+    height,
+  };
+}
+
+function isPointInRectangle(
+  x: number,
+  y: number,
+  rect: Rectangle,
+): boolean {
+  const displayX = rect.width >= 0 ? rect.startX : rect.startX + rect.width;
+  const displayY = rect.height >= 0 ? rect.startY : rect.startY + rect.height;
+  const displayWidth = Math.abs(rect.width);
+  const displayHeight = Math.abs(rect.height);
+
+  return (
+    x >= displayX &&
+    x <= displayX + displayWidth &&
+    y >= displayY &&
+    y <= displayY + displayHeight
+  );
+}
+
+function getResizeCorner(
+  x: number,
+  y: number,
+  rect: Rectangle,
+): ResizeCorner | null {
+  const displayX = rect.width >= 0 ? rect.startX : rect.startX + rect.width;
+  const displayY = rect.height >= 0 ? rect.startY : rect.startY + rect.height;
+  const displayWidth = Math.abs(rect.width);
+  const displayHeight = Math.abs(rect.height);
+  const handleSize = 8;
+
+  if (
+    Math.abs(x - displayX) <= handleSize &&
+    Math.abs(y - displayY) <= handleSize
+  ) {
+    return "top-left";
+  }
+  if (
+    Math.abs(x - (displayX + displayWidth)) <= handleSize &&
+    Math.abs(y - displayY) <= handleSize
+  ) {
+    return "top-right";
+  }
+  if (
+    Math.abs(x - displayX) <= handleSize &&
+    Math.abs(y - (displayY + displayHeight)) <= handleSize
+  ) {
+    return "bottom-left";
+  }
+  if (
+    Math.abs(x - (displayX + displayWidth)) <= handleSize &&
+    Math.abs(y - (displayY + displayHeight)) <= handleSize
+  ) {
+    return "bottom-right";
+  }
+  return null;
+}
+
+function resizeRectangle(
+  rect: Rectangle,
+  corner: ResizeCorner,
+  newX: number,
+  newY: number,
+  constrainSquare: boolean,
+): Rectangle {
+  const displayX = rect.width >= 0 ? rect.startX : rect.startX + rect.width;
+  const displayY = rect.height >= 0 ? rect.startY : rect.startY + rect.height;
+  const displayWidth = Math.abs(rect.width);
+  const displayHeight = Math.abs(rect.height);
+
+  let newStartX = displayX;
+  let newStartY = displayY;
+  let newWidth = displayWidth;
+  let newHeight = displayHeight;
+
+  if (corner === "top-left") {
+    newStartX = newX;
+    newStartY = newY;
+    newWidth = displayX + displayWidth - newX;
+    newHeight = displayY + displayHeight - newY;
+  } else if (corner === "top-right") {
+    newStartY = newY;
+    newWidth = newX - displayX;
+    newHeight = displayY + displayHeight - newY;
+  } else if (corner === "bottom-left") {
+    newStartX = newX;
+    newWidth = displayX + displayWidth - newX;
+    newHeight = newY - displayY;
+  } else if (corner === "bottom-right") {
+    newWidth = newX - displayX;
+    newHeight = newY - displayY;
+  }
+
+  if (constrainSquare) {
+    const size = Math.max(Math.abs(newWidth), Math.abs(newHeight));
+    newWidth = newWidth >= 0 ? size : -size;
+    newHeight = newHeight >= 0 ? size : -size;
+  }
+
+  const minSize = 10;
+  if (Math.abs(newWidth) < minSize)
+    newWidth = newWidth >= 0 ? minSize : -minSize;
+  if (Math.abs(newHeight) < minSize)
+    newHeight = newHeight >= 0 ? minSize : -minSize;
+
+  return {
+    ...rect,
+    startX: newStartX,
+    startY: newStartY,
+    width: newWidth,
+    height: newHeight,
+  };
+}
+
 export default function Canvas() {
   const [points, setPoints] = useState<Point[]>([]);
   const [rectangles, setRectangles] = useState<Rectangle[]>([]);
   const [savedDrawings, setSavedDrawings] = useState<DrawingSummary[]>([]);
+  const [optimisticDrawings, setOptimisticDrawings] = useOptimistic(
+    savedDrawings,
+    (state, optimisticValue: DrawingSummary[]) => optimisticValue
+  );
   const [drawingName, setDrawingName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, startTransition] = useTransition();
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -45,10 +186,43 @@ export default function Canvas() {
   const startPointRef = useRef<{ x: number; y: number } | null>(null);
   const canvasRef = useRef<HTMLButtonElement>(null);
 
+  const handleDeleteShape = useCallback(() => {
+    setSelectedShapeId((currentId) => {
+      if (currentId === null) return null;
+
+      setPoints((prev) => {
+        const pointExists = prev.some((p) => p.id === currentId);
+        if (pointExists) {
+          setMessage({ type: "success", text: "Point deleted" });
+          return prev.filter((p) => p.id !== currentId);
+        }
+        return prev;
+      });
+
+      setRectangles((prev) => {
+        const rectangleExists = prev.some((r) => r.id === currentId);
+        if (rectangleExists) {
+          setMessage({ type: "success", text: "Rectangle deleted" });
+          return prev.filter((r) => r.id !== currentId);
+        }
+        return prev;
+      });
+
+      return null;
+    });
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Shift" && !isShiftPressed) {
-        setIsShiftPressed(true);
+      if (event.key === "Shift") {
+        setIsShiftPressed((prev) => {
+          if (!prev) return true;
+          return prev;
+        });
+      }
+      if (event.key === "Delete") {
+        event.preventDefault();
+        handleDeleteShape();
       }
     };
 
@@ -65,7 +239,7 @@ export default function Canvas() {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [isShiftPressed]);
+  }, [handleDeleteShape]);
 
   const fetchDrawings = useCallback(async () => {
     try {
@@ -74,7 +248,9 @@ export default function Canvas() {
         throw new Error("Failed to fetch drawings");
       }
       const data = (await response.json()) as DrawingsResponse;
-      setSavedDrawings(data.drawings);
+      startTransition(() => {
+        setSavedDrawings(data.drawings);
+      });
     } catch (error) {
       console.error("Error fetching drawings:", error);
       setMessage({ type: "error", text: "Failed to load saved drawings" });
@@ -92,7 +268,7 @@ export default function Canvas() {
     }
   }, [message]);
 
-  const handleSaveDrawing = async () => {
+  const handleSaveDrawing = useCallback(async () => {
     if (!drawingName.trim()) {
       setMessage({ type: "error", text: "Please enter a drawing name" });
       return;
@@ -107,6 +283,15 @@ export default function Canvas() {
     }
 
     setIsSaving(true);
+
+    const tempDrawing: DrawingSummary = {
+      id: `temp-${Date.now()}`,
+      name: drawingName,
+      createdAt: new Date().toISOString(),
+    };
+
+    setOptimisticDrawings([...savedDrawings, tempDrawing]);
+
     try {
       const drawingData = {
         name: drawingName,
@@ -133,170 +318,59 @@ export default function Canvas() {
     } catch (error) {
       console.error("Error saving drawing:", error);
       setMessage({ type: "error", text: "Failed to save drawing" });
+      setOptimisticDrawings(savedDrawings);
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [drawingName, points, rectangles, fetchDrawings, savedDrawings, setOptimisticDrawings]);
 
-  const handleLoadDrawing = async (id: string) => {
-    setIsLoading(true);
+  const handleLoadDrawing = useCallback(async (id: string) => {
+    startTransition(async () => {
+      try {
+        const response = await fetch(`/api/v1/drawings/${id}`);
+        if (!response.ok) {
+          throw new Error("Failed to load drawing");
+        }
+
+        const drawing = (await response.json()) as SavedDrawing;
+        setPoints(drawing.points);
+        setRectangles(drawing.rectangles);
+        setSelectedShapeId(null);
+        setMessage({ type: "success", text: `Loaded "${drawing.name}"` });
+      } catch (error) {
+        console.error("Error loading drawing:", error);
+        setMessage({ type: "error", text: "Failed to load drawing" });
+      }
+    });
+  }, []);
+
+  const handleDeleteDrawing = useCallback(async (id: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to delete "${name}"?`)) {
+      return;
+    }
+
+    const optimisticUpdate = savedDrawings.filter(d => d.id !== id);
+    setOptimisticDrawings(optimisticUpdate);
+
     try {
-      const response = await fetch(`/api/v1/drawings/${id}`);
+      const response = await fetch(`/api/v1/drawings/${id}`, {
+        method: "DELETE",
+      });
+
       if (!response.ok) {
-        throw new Error("Failed to load drawing");
+        throw new Error("Failed to delete drawing");
       }
 
-      const drawing = (await response.json()) as SavedDrawing;
-      setPoints(drawing.points);
-      setRectangles(drawing.rectangles);
-      setSelectedShapeId(null);
-      setMessage({ type: "success", text: `Loaded "${drawing.name}"` });
+      setMessage({ type: "success", text: `Deleted "${name}"` });
+      await fetchDrawings();
     } catch (error) {
-      console.error("Error loading drawing:", error);
-      setMessage({ type: "error", text: "Failed to load drawing" });
-    } finally {
-      setIsLoading(false);
+      console.error("Error deleting drawing:", error);
+      setMessage({ type: "error", text: "Failed to delete drawing" });
+      setOptimisticDrawings(savedDrawings);
     }
-  };
+  }, [fetchDrawings, savedDrawings, setOptimisticDrawings]);
 
-  const calculateRectangle = (
-    startX: number,
-    startY: number,
-    currentX: number,
-    currentY: number,
-    constrainSquare: boolean,
-  ): Rectangle => {
-    let width = currentX - startX;
-    let height = currentY - startY;
-
-    if (constrainSquare) {
-      const size = Math.min(Math.abs(width), Math.abs(height));
-      width = width >= 0 ? size : -size;
-      height = height >= 0 ? size : -size;
-    }
-
-    return {
-      id: Date.now(),
-      startX,
-      startY,
-      width,
-      height,
-    };
-  };
-
-  const isPointInRectangle = (
-    x: number,
-    y: number,
-    rect: Rectangle,
-  ): boolean => {
-    const displayX = rect.width >= 0 ? rect.startX : rect.startX + rect.width;
-    const displayY = rect.height >= 0 ? rect.startY : rect.startY + rect.height;
-    const displayWidth = Math.abs(rect.width);
-    const displayHeight = Math.abs(rect.height);
-
-    return (
-      x >= displayX &&
-      x <= displayX + displayWidth &&
-      y >= displayY &&
-      y <= displayY + displayHeight
-    );
-  };
-
-  const getResizeCorner = (
-    x: number,
-    y: number,
-    rect: Rectangle,
-  ): ResizeCorner | null => {
-    const displayX = rect.width >= 0 ? rect.startX : rect.startX + rect.width;
-    const displayY = rect.height >= 0 ? rect.startY : rect.startY + rect.height;
-    const displayWidth = Math.abs(rect.width);
-    const displayHeight = Math.abs(rect.height);
-    const handleSize = 8;
-
-    if (
-      Math.abs(x - displayX) <= handleSize &&
-      Math.abs(y - displayY) <= handleSize
-    ) {
-      return "top-left";
-    }
-    if (
-      Math.abs(x - (displayX + displayWidth)) <= handleSize &&
-      Math.abs(y - displayY) <= handleSize
-    ) {
-      return "top-right";
-    }
-    if (
-      Math.abs(x - displayX) <= handleSize &&
-      Math.abs(y - (displayY + displayHeight)) <= handleSize
-    ) {
-      return "bottom-left";
-    }
-    if (
-      Math.abs(x - (displayX + displayWidth)) <= handleSize &&
-      Math.abs(y - (displayY + displayHeight)) <= handleSize
-    ) {
-      return "bottom-right";
-    }
-    return null;
-  };
-
-  const resizeRectangle = (
-    rect: Rectangle,
-    corner: ResizeCorner,
-    newX: number,
-    newY: number,
-    constrainSquare: boolean,
-  ): Rectangle => {
-    const displayX = rect.width >= 0 ? rect.startX : rect.startX + rect.width;
-    const displayY = rect.height >= 0 ? rect.startY : rect.startY + rect.height;
-    const displayWidth = Math.abs(rect.width);
-    const displayHeight = Math.abs(rect.height);
-
-    let newStartX = displayX;
-    let newStartY = displayY;
-    let newWidth = displayWidth;
-    let newHeight = displayHeight;
-
-    if (corner === "top-left") {
-      newStartX = newX;
-      newStartY = newY;
-      newWidth = displayX + displayWidth - newX;
-      newHeight = displayY + displayHeight - newY;
-    } else if (corner === "top-right") {
-      newStartY = newY;
-      newWidth = newX - displayX;
-      newHeight = displayY + displayHeight - newY;
-    } else if (corner === "bottom-left") {
-      newStartX = newX;
-      newWidth = displayX + displayWidth - newX;
-      newHeight = newY - displayY;
-    } else if (corner === "bottom-right") {
-      newWidth = newX - displayX;
-      newHeight = newY - displayY;
-    }
-
-    if (constrainSquare) {
-      const size = Math.max(Math.abs(newWidth), Math.abs(newHeight));
-      newWidth = newWidth >= 0 ? size : -size;
-      newHeight = newHeight >= 0 ? size : -size;
-    }
-
-    const minSize = 10;
-    if (Math.abs(newWidth) < minSize)
-      newWidth = newWidth >= 0 ? minSize : -minSize;
-    if (Math.abs(newHeight) < minSize)
-      newHeight = newHeight >= 0 ? minSize : -minSize;
-
-    return {
-      ...rect,
-      startX: newStartX,
-      startY: newStartY,
-      width: newWidth,
-      height: newHeight,
-    };
-  };
-
-  const handleMouseDown = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleMouseDown = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const x = Math.round(event.clientX - rect.left);
     const y = Math.round(event.clientY - rect.top);
@@ -315,7 +389,17 @@ export default function Canvas() {
       }
     }
 
-    // Check if clicking on any shape
+    // Check if clicking on a point
+    for (let i = points.length - 1; i >= 0; i--) {
+      const point = points[i];
+      const distance = Math.sqrt((x - point.x) ** 2 + (y - point.y) ** 2);
+      if (distance <= 8) {
+        setSelectedShapeId(point.id);
+        return;
+      }
+    }
+
+    // Check if clicking on any rectangle
     for (let i = rectangles.length - 1; i >= 0; i--) {
       const shape = rectangles[i];
       if (isPointInRectangle(x, y, shape)) {
@@ -337,9 +421,9 @@ export default function Canvas() {
     // Start new shape creation
     startPointRef.current = { x, y };
     setIsDragging(true);
-  };
+  }, [rectangles, points, selectedShapeId]);
 
-  const handleMouseMove = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleMouseMove = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const currentX = Math.round(event.clientX - rect.left);
     const currentY = Math.round(event.clientY - rect.top);
@@ -392,9 +476,9 @@ export default function Canvas() {
       );
       setCurrentRectangle(rectangle);
     }
-  };
+  }, [isResizing, resizeCorner, selectedShapeId, isDraggingShape, dragOffset, isDragging, isShiftPressed]);
 
-  const handleMouseUp = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleMouseUp = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     // Handle resize completion
     if (isResizing) {
       setIsResizing(false);
@@ -438,7 +522,7 @@ export default function Canvas() {
     setCurrentRectangle(null);
     setIsDragging(false);
     startPointRef.current = null;
-  };
+  }, [isResizing, isDraggingShape, currentRectangle]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
@@ -486,6 +570,16 @@ export default function Canvas() {
               >
                 {isSaving ? "Saving..." : "Save Drawing"}
               </button>
+              {selectedShapeId !== null && (
+                <button
+                  type="button"
+                  onClick={handleDeleteShape}
+                  className="px-4 md:px-6 py-2 text-sm md:text-base bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap"
+                  data-testid="delete-shape-button"
+                >
+                  Delete Shape
+                </button>
+              )}
             </div>
 
             <div className="relative">
@@ -639,29 +733,45 @@ export default function Canvas() {
                 <div className="text-center py-4 text-sm md:text-base text-gray-600">Loading...</div>
               )}
 
-              {!isLoading && savedDrawings.length === 0 && (
+              {!isLoading && optimisticDrawings.length === 0 && (
                 <p className="text-gray-500 text-sm">
                   No saved drawings yet. Create and save your first drawing!
                 </p>
               )}
 
-              {!isLoading && savedDrawings.length > 0 && (
+              {!isLoading && optimisticDrawings.length > 0 && (
                 <div className="space-y-2 max-h-[400px] lg:max-h-[600px] overflow-y-auto">
-                  {savedDrawings.map((drawing) => (
-                    <button
+                  {optimisticDrawings.map((drawing) => (
+                    <div
                       key={drawing.id}
-                      type="button"
-                      onClick={() => handleLoadDrawing(drawing.id)}
-                      className="w-full text-left p-2.5 md:p-3 bg-gray-50 hover:bg-blue-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors"
+                      className="flex gap-2 items-stretch"
                     >
-                      <div className="font-medium text-sm md:text-base text-gray-900 truncate">
-                        {drawing.name}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {new Date(drawing.createdAt).toLocaleDateString()}{" "}
-                        {new Date(drawing.createdAt).toLocaleTimeString()}
-                      </div>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => handleLoadDrawing(drawing.id)}
+                        className="flex-1 text-left p-2.5 md:p-3 bg-gray-50 hover:bg-blue-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors"
+                      >
+                        <div className="font-medium text-sm md:text-base text-gray-900 truncate">
+                          {drawing.name}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {new Date(drawing.createdAt).toLocaleDateString()}{" "}
+                          {new Date(drawing.createdAt).toLocaleTimeString()}
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteDrawing(drawing.id, drawing.name);
+                        }}
+                        className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                        data-testid={`delete-drawing-${drawing.id}`}
+                        title="Delete drawing"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}

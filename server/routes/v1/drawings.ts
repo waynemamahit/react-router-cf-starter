@@ -105,6 +105,27 @@ async function listDrawings(kv: KVNamespace): Promise<DrawingSummary[]> {
   return summaries;
 }
 
+async function deleteDrawing(
+  kv: KVNamespace,
+  id: string,
+): Promise<boolean> {
+  const key = `${DRAWING_KEY_PREFIX}${id}`;
+  const drawing = await getDrawing(kv, id);
+
+  if (!drawing) {
+    return false;
+  }
+
+  await kv.delete(key);
+
+  const indexValue = await kv.get(DRAWINGS_INDEX_KEY, "json");
+  const index = (indexValue as string[]) || [];
+  const updatedIndex = index.filter((drawingId) => drawingId !== id);
+  await kv.put(DRAWINGS_INDEX_KEY, JSON.stringify(updatedIndex));
+
+  return true;
+}
+
 drawings.get("/", async (c) => {
   try {
     const kv = c.env.KV;
@@ -174,5 +195,27 @@ drawings.post(
     }
   },
 );
+
+drawings.delete("/:id", async (c) => {
+  const id = c.req.param("id");
+
+  if (!id || id.trim() === "" || id.includes(" ")) {
+    return c.json({ error: "Invalid drawing ID" }, 400);
+  }
+
+  try {
+    const kv = c.env.KV;
+    const deleted = await deleteDrawing(kv, id.trim());
+
+    if (!deleted) {
+      return c.json({ error: "Drawing not found" }, 404);
+    }
+
+    return c.body(null, 204);
+  } catch (error) {
+    console.error(`Error deleting drawing ${id}:`, error);
+    return c.json({ error: "Failed to delete drawing" }, 500);
+  }
+});
 
 export default drawings;

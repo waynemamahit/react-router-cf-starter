@@ -233,4 +233,92 @@ describe("Drawings API", () => {
       expect(mockKV.put).toHaveBeenCalledTimes(2);
     });
   });
+
+  describe("DELETE /drawings/:id", () => {
+    it("should return 400 for invalid ID format", async () => {
+      const app = createTestApp();
+      const req = createTestRequest("/drawings/%20", { method: "DELETE" });
+      const res = await app.fetch(req, createMockEnv());
+
+      expect(res.status).toBe(400);
+      const data = await res.json();
+      expect(data).toEqual({ error: "Invalid drawing ID" });
+    });
+
+    it("should return 404 when drawing not found", async () => {
+      mockKV.get.mockImplementation(async () => {
+        return null;
+      });
+
+      const app = createTestApp();
+      const req = createTestRequest("/drawings/nonexistent", { method: "DELETE" });
+      const res = await app.fetch(req, createMockEnv());
+
+      expect(res.status).toBe(404);
+      const data = await res.json();
+      expect(data).toEqual({ error: "Drawing not found" });
+    });
+
+    it("should return 204 on successful deletion", async () => {
+      const drawing: SavedDrawing = {
+        id: "test-id",
+        name: "Test Drawing",
+        createdAt: "2025-01-01T00:00:00.000Z",
+        points: [],
+        rectangles: [],
+      };
+
+      mockKV.get.mockImplementation(async (key: string, type?: string) => {
+        if (key === "drawing:test-id") {
+          return type === "json" ? drawing : JSON.stringify(drawing);
+        }
+        if (key === "drawings:index") {
+          return type === "json" ? ["test-id"] : JSON.stringify(["test-id"]);
+        }
+        return null;
+      });
+      mockKV.delete.mockResolvedValue(undefined);
+      mockKV.put.mockResolvedValue(undefined);
+
+      const app = createTestApp();
+      const req = createTestRequest("/drawings/test-id", { method: "DELETE" });
+      const res = await app.fetch(req, createMockEnv());
+
+      expect(res.status).toBe(204);
+      expect(mockKV.delete).toHaveBeenCalledWith("drawing:test-id");
+    });
+
+    it("should remove drawing from index when deleted", async () => {
+      const drawing: SavedDrawing = {
+        id: "test-id",
+        name: "Test Drawing",
+        createdAt: "2025-01-01T00:00:00.000Z",
+        points: [],
+        rectangles: [],
+      };
+
+      const drawingIds = ["test-id", "other-id"];
+      mockKV.get.mockImplementation(async (key: string, type?: string) => {
+        if (key === "drawing:test-id") {
+          return type === "json" ? drawing : JSON.stringify(drawing);
+        }
+        if (key === "drawings:index") {
+          return type === "json" ? drawingIds : JSON.stringify(drawingIds);
+        }
+        return null;
+      });
+      mockKV.delete.mockResolvedValue(undefined);
+      mockKV.put.mockResolvedValue(undefined);
+
+      const app = createTestApp();
+      const req = createTestRequest("/drawings/test-id", { method: "DELETE" });
+      const res = await app.fetch(req, createMockEnv());
+
+      expect(res.status).toBe(204);
+      expect(mockKV.put).toHaveBeenCalledWith(
+        "drawings:index",
+        JSON.stringify(["other-id"])
+      );
+    });
+  });
 });
