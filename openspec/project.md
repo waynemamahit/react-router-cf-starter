@@ -20,6 +20,8 @@
 
 ### Architecture Patterns
 - Use React Router framework mode for routing
+- Use Hono for API routing
+- Use React patterns for components, hooks, and state management.
 
 ### Testing Strategy
 - Use Vitest for unit testing includes backend API and frontend components
@@ -39,7 +41,7 @@
 - Make sure all types are defined in separate models (class, interfaces and types) in one file.
 - Group related models together in their respective files.
 - Export all models from a single index file for easy imports.
-- Refactor several code if possible and follow clean architecture principles.
+- Refactor by following clean architecture and SOLID principles.
 
 ## External Dependencies
 - None
