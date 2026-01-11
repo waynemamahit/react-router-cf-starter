@@ -4,7 +4,7 @@
  */
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "react-router-cf-starter",
+  "name": "react-router-cf-starter-staging",
   "compatibility_date": "2025-10-11",
   "main": "./server/app.ts",
   "observability": {
