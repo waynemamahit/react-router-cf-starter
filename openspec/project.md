@@ -17,8 +17,8 @@ Create a full-stack React application with React Router framework mode, deployed
 ### Styling & UI
 
 - **CSS Framework**: TailwindCSS 4 (latest modern practices)
-- **UI Components**: DaisyUI (latest) with custom theming
-- **Design Principles**: Responsive, accessible, semantic HTML
+- **UI Components**: DaisyUI (latest version) with customized built-in themes
+- **Design Principles**: Responsive, accessible, semantic HTML, SEO-optimized
 
 ### Code Quality
 
@@ -1148,7 +1148,7 @@ export { jobs };
 
 ---
 
-## Accessibility Standards
+## Accessibility and SEO Standards
 
 ### Semantic HTML Requirements
 
@@ -1156,6 +1156,7 @@ export { jobs };
 - Use semantic elements (`nav`, `main`, `article`, `section`, `aside`, `footer`)
 - Use `button` for actions, `a` for navigation
 - Use proper form labels and fieldsets
+- Structure content logically for screen readers and crawlers
 
 ### ARIA Implementation
 
@@ -1193,86 +1194,721 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
 }
 ```
 
+### SEO Best Practices
+
+#### Meta Tags Configuration
+
+```typescript
+// app/components/common/SEO.tsx
+import { useLocation } from "react-router";
+
+interface SEOProps {
+  title: string;
+  description: string;
+  keywords?: string[];
+  image?: string;
+  type?: "website" | "article" | "product";
+  publishedTime?: string;
+  modifiedTime?: string;
+  author?: string;
+  noIndex?: boolean;
+}
+
+export function SEO({
+  title,
+  description,
+  keywords = [],
+  image,
+  type = "website",
+  publishedTime,
+  modifiedTime,
+  author,
+  noIndex = false,
+}: SEOProps) {
+  const location = useLocation();
+  const siteUrl = "https://example.com";
+  const canonicalUrl = `${siteUrl}${location.pathname}`;
+  const fullTitle = `${title} | Site Name`;
+
+  return (
+    <>
+      {/* Primary Meta Tags */}
+      <title>{fullTitle}</title>
+      <meta name="title" content={fullTitle} />
+      <meta name="description" content={description} />
+      {keywords.length > 0 && (
+        <meta name="keywords" content={keywords.join(", ")} />
+      )}
+      <link rel="canonical" href={canonicalUrl} />
+      {noIndex && <meta name="robots" content="noindex, nofollow" />}
+
+      {/* Open Graph / Facebook */}
+      <meta property="og:type" content={type} />
+      <meta property="og:url" content={canonicalUrl} />
+      <meta property="og:title" content={fullTitle} />
+      <meta property="og:description" content={description} />
+      {image && <meta property="og:image" content={image} />}
+      <meta property="og:site_name" content="Site Name" />
+
+      {/* Twitter */}
+      <meta property="twitter:card" content="summary_large_image" />
+      <meta property="twitter:url" content={canonicalUrl} />
+      <meta property="twitter:title" content={fullTitle} />
+      <meta property="twitter:description" content={description} />
+      {image && <meta property="twitter:image" content={image} />}
+
+      {/* Article-specific */}
+      {type === "article" && publishedTime && (
+        <meta property="article:published_time" content={publishedTime} />
+      )}
+      {type === "article" && modifiedTime && (
+        <meta property="article:modified_time" content={modifiedTime} />
+      )}
+      {type === "article" && author && (
+        <meta property="article:author" content={author} />
+      )}
+    </>
+  );
+}
+```
+
+#### Structured Data (JSON-LD)
+
+```typescript
+// app/components/common/StructuredData.tsx
+interface OrganizationSchema {
+  type: "Organization";
+  name: string;
+  url: string;
+  logo?: string;
+  sameAs?: string[];
+}
+
+interface ArticleSchema {
+  type: "Article";
+  headline: string;
+  description: string;
+  image?: string;
+  datePublished: string;
+  dateModified?: string;
+  author: { name: string; url?: string };
+}
+
+interface BreadcrumbSchema {
+  type: "BreadcrumbList";
+  items: { name: string; url: string }[];
+}
+
+type SchemaType = OrganizationSchema | ArticleSchema | BreadcrumbSchema;
+
+export function StructuredData({ schema }: { schema: SchemaType }) {
+  const generateSchema = () => {
+    switch (schema.type) {
+      case "Organization":
+        return {
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: schema.name,
+          url: schema.url,
+          logo: schema.logo,
+          sameAs: schema.sameAs,
+        };
+      case "Article":
+        return {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: schema.headline,
+          description: schema.description,
+          image: schema.image,
+          datePublished: schema.datePublished,
+          dateModified: schema.dateModified,
+          author: {
+            "@type": "Person",
+            name: schema.author.name,
+            url: schema.author.url,
+          },
+        };
+      case "BreadcrumbList":
+        return {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: schema.items.map((item, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            name: item.name,
+            item: item.url,
+          })),
+        };
+    }
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(generateSchema()) }}
+    />
+  );
+}
+```
+
+#### Route-Level SEO with React Router
+
+```typescript
+// app/routes/blog.$slug.tsx
+import type { Route } from "./+types/blog.$slug";
+import { SEO } from "~/components/common/SEO";
+import { StructuredData } from "~/components/common/StructuredData";
+
+export function meta({ data }: Route.MetaArgs) {
+  if (!data?.post) {
+    return [{ title: "Post Not Found" }];
+  }
+
+  return [
+    { title: `${data.post.title} | Blog` },
+    { name: "description", content: data.post.excerpt },
+    { property: "og:title", content: data.post.title },
+    { property: "og:description", content: data.post.excerpt },
+    { property: "og:image", content: data.post.featuredImage },
+    { property: "og:type", content: "article" },
+    { property: "article:published_time", content: data.post.publishedAt },
+    { property: "article:author", content: data.post.author.name },
+  ];
+}
+
+export async function loader({ params }: Route.LoaderArgs) {
+  const post = await getPostBySlug(params.slug);
+  if (!post) {
+    throw new Response("Not Found", { status: 404 });
+  }
+  return { post };
+}
+
+export default function BlogPost({ loaderData }: Route.ComponentProps) {
+  const { post } = loaderData;
+
+  return (
+    <article>
+      <StructuredData
+        schema={{
+          type: "Article",
+          headline: post.title,
+          description: post.excerpt,
+          image: post.featuredImage,
+          datePublished: post.publishedAt,
+          dateModified: post.updatedAt,
+          author: { name: post.author.name, url: post.author.url },
+        }}
+      />
+      <header>
+        <h1>{post.title}</h1>
+        <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+        <address rel="author">{post.author.name}</address>
+      </header>
+      <div dangerouslySetInnerHTML={{ __html: post.content }} />
+    </article>
+  );
+}
+```
+
+#### SEO Checklist
+
+| Requirement                          | Implementation                                   |
+| ------------------------------------ | ------------------------------------------------ |
+| Unique page titles                   | Use `meta()` function in each route              |
+| Meta descriptions (150-160 chars)    | Descriptive, keyword-rich summaries              |
+| Canonical URLs                       | Prevent duplicate content issues                 |
+| Open Graph tags                      | Social media sharing optimization                |
+| Twitter Card tags                    | Twitter-specific sharing                         |
+| Structured data (JSON-LD)            | Rich snippets in search results                  |
+| Semantic heading hierarchy           | Single `h1`, logical `h2-h6` nesting             |
+| Alt text for images                  | Descriptive text for accessibility and SEO       |
+| Internal linking                     | Use descriptive anchor text                      |
+| Mobile-friendly design               | Responsive layout with TailwindCSS               |
+| Fast page load (Core Web Vitals)     | Optimize LCP, FID, CLS                           |
+| Sitemap.xml                          | Auto-generate from routes                        |
+| robots.txt                           | Control crawler access                           |
+
+#### Sitemap Generation
+
+```typescript
+// app/routes/sitemap[.]xml.ts
+import type { Route } from "./+types/sitemap[.]xml";
+
+const SITE_URL = "https://example.com";
+
+export async function loader({ context }: Route.LoaderArgs) {
+  // Fetch dynamic routes from database
+  const posts = await getAllPublishedPosts(context);
+  const products = await getAllProducts(context);
+
+  const staticRoutes = [
+    { url: "/", priority: 1.0, changefreq: "daily" },
+    { url: "/about", priority: 0.8, changefreq: "monthly" },
+    { url: "/blog", priority: 0.9, changefreq: "weekly" },
+    { url: "/contact", priority: 0.7, changefreq: "monthly" },
+  ];
+
+  const postRoutes = posts.map((post) => ({
+    url: `/blog/${post.slug}`,
+    lastmod: post.updatedAt,
+    priority: 0.7,
+    changefreq: "weekly" as const,
+  }));
+
+  const productRoutes = products.map((product) => ({
+    url: `/products/${product.slug}`,
+    lastmod: product.updatedAt,
+    priority: 0.8,
+    changefreq: "daily" as const,
+  }));
+
+  const allRoutes = [...staticRoutes, ...postRoutes, ...productRoutes];
+
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  ${allRoutes
+    .map(
+      (route) => `
+  <url>
+    <loc>${SITE_URL}${route.url}</loc>
+    ${route.lastmod ? `<lastmod>${route.lastmod}</lastmod>` : ""}
+    <changefreq>${route.changefreq}</changefreq>
+    <priority>${route.priority}</priority>
+  </url>`
+    )
+    .join("")}
+</urlset>`;
+
+  return new Response(sitemap, {
+    headers: {
+      "Content-Type": "application/xml",
+      "Cache-Control": "public, max-age=3600",
+    },
+  });
+}
+```
+
+#### Performance Optimization for SEO
+
+```typescript
+// server/middleware/cache-headers.ts
+import { createMiddleware } from "hono/factory";
+
+export const cacheHeaders = createMiddleware(async (c, next) => {
+  await next();
+
+  const url = new URL(c.req.url);
+
+  // Static assets - long cache
+  if (url.pathname.match(/\.(js|css|png|jpg|svg|woff2?)$/)) {
+    c.res.headers.set("Cache-Control", "public, max-age=31536000, immutable");
+  }
+
+  // HTML pages - short cache with revalidation
+  if (c.res.headers.get("Content-Type")?.includes("text/html")) {
+    c.res.headers.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+  }
+
+  // API responses - no cache by default
+  if (url.pathname.startsWith("/api/")) {
+    c.res.headers.set("Cache-Control", "no-store");
+  }
+});
+```
+
 ---
 
-## DaisyUI Theming and Custom Components
+## DaisyUI with Customized Built-in Themes
 
-### Theme Configuration
+This project uses DaisyUI's built-in themes with customizations to maintain consistency while leveraging the well-designed theme foundations.
 
-```css
-/* app/styles/themes.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+### Theme Selection and Customization
 
-@layer base {
-  :root {
-    /* Define custom theme variables */
+DaisyUI provides many built-in themes. Instead of creating themes from scratch, extend existing themes with brand-specific customizations:
+
+```typescript
+// tailwind.config.ts
+import type { Config } from "tailwindcss";
+import daisyui from "daisyui";
+
+export default {
+  content: ["./app/**/*.{js,ts,jsx,tsx}"],
+  theme: {
+    extend: {},
+  },
+  plugins: [daisyui],
+  daisyui: {
+    themes: [
+      {
+        // Extend the built-in "light" theme
+        light: {
+          ...require("daisyui/src/theming/themes")["light"],
+          primary: "#6366f1",           // Custom primary (Indigo)
+          "primary-content": "#ffffff",
+          secondary: "#8b5cf6",          // Custom secondary (Violet)
+          accent: "#f59e0b",             // Custom accent (Amber)
+          "--rounded-btn": "0.5rem",     // Button border radius
+          "--rounded-box": "0.75rem",    // Card/box border radius
+        },
+      },
+      {
+        // Extend the built-in "dark" theme
+        dark: {
+          ...require("daisyui/src/theming/themes")["dark"],
+          primary: "#818cf8",            // Lighter primary for dark mode
+          "primary-content": "#1f2937",
+          secondary: "#a78bfa",
+          accent: "#fbbf24",
+          "base-100": "#1f2937",
+          "base-200": "#111827",
+          "base-300": "#0f172a",
+          "--rounded-btn": "0.5rem",
+          "--rounded-box": "0.75rem",
+        },
+      },
+      // Include other built-in themes as-is for variety
+      "cupcake",
+      "corporate",
+      "synthwave",
+      "cyberpunk",
+    ],
+    // Default theme
+    darkTheme: "dark",
+    // Prefix for DaisyUI classes (optional)
+    prefix: "",
+    // Log DaisyUI info (disable in production)
+    logs: process.env.NODE_ENV === "development",
+  },
+} satisfies Config;
+```
+
+### Theme Switching Implementation
+
+```typescript
+// app/hooks/useTheme.ts
+import { useState, useEffect, useCallback } from "react";
+
+type Theme = "light" | "dark" | "cupcake" | "corporate" | "synthwave" | "cyberpunk";
+
+const THEME_KEY = "app-theme";
+const DEFAULT_THEME: Theme = "light";
+
+export function useTheme() {
+  const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const stored = localStorage.getItem(THEME_KEY) as Theme | null;
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    
+    const initialTheme = stored || (prefersDark ? "dark" : DEFAULT_THEME);
+    setThemeState(initialTheme);
+    document.documentElement.setAttribute("data-theme", initialTheme);
+  }, []);
+
+  const setTheme = useCallback((newTheme: Theme) => {
+    setThemeState(newTheme);
+    localStorage.setItem(THEME_KEY, newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  }, [theme, setTheme]);
+
+  return { theme, setTheme, toggleTheme, mounted };
+}
+```
+
+```typescript
+// app/components/common/ThemeSelector.tsx
+import { useTheme } from "~/hooks/useTheme";
+
+const AVAILABLE_THEMES = [
+  { value: "light", label: "Light", icon: "☀️" },
+  { value: "dark", label: "Dark", icon: "🌙" },
+  { value: "cupcake", label: "Cupcake", icon: "🧁" },
+  { value: "corporate", label: "Corporate", icon: "🏢" },
+  { value: "synthwave", label: "Synthwave", icon: "🌆" },
+  { value: "cyberpunk", label: "Cyberpunk", icon: "🤖" },
+] as const;
+
+export function ThemeSelector() {
+  const { theme, setTheme, mounted } = useTheme();
+
+  if (!mounted) {
+    return <div className="skeleton w-32 h-10" />;
   }
-}
 
-/* DaisyUI theme customization */
-[data-theme="custom-light"] {
-  --p: 262 80% 50%;
-  --s: 199 89% 48%;
-  --a: 47 100% 50%;
-  --n: 220 14% 96%;
-  --b1: 0 0% 100%;
-  --bc: 220 14% 10%;
-}
-
-[data-theme="custom-dark"] {
-  --p: 262 80% 60%;
-  --s: 199 89% 58%;
-  --a: 47 100% 60%;
-  --n: 220 14% 10%;
-  --b1: 220 14% 8%;
-  --bc: 220 14% 96%;
+  return (
+    <div className="dropdown dropdown-end">
+      <div tabIndex={0} role="button" className="btn btn-ghost">
+        <span className="mr-2">
+          {AVAILABLE_THEMES.find((t) => t.value === theme)?.icon}
+        </span>
+        Theme
+        <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+      <ul
+        tabIndex={0}
+        className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52"
+        role="listbox"
+        aria-label="Select theme"
+      >
+        {AVAILABLE_THEMES.map((t) => (
+          <li key={t.value}>
+            <button
+              onClick={() => setTheme(t.value)}
+              className={theme === t.value ? "active" : ""}
+              role="option"
+              aria-selected={theme === t.value}
+            >
+              <span>{t.icon}</span>
+              {t.label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 ```
 
 ### Custom Component Patterns
 
-Define custom components for consistent UI patterns:
+Define custom components that extend DaisyUI's built-in components:
 
 ```typescript
 // app/components/common/Toast.tsx
-export function Toast({ message, type, onClose }: ToastProps) {
+import { useEffect } from "react";
+
+interface ToastProps {
+  message: string;
+  type: "info" | "success" | "warning" | "error";
+  duration?: number;
+  onClose: () => void;
+}
+
+export function Toast({ message, type, duration = 5000, onClose }: ToastProps) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, duration);
+    return () => clearTimeout(timer);
+  }, [duration, onClose]);
+
+  const alertClass = {
+    info: "alert-info",
+    success: "alert-success",
+    warning: "alert-warning",
+    error: "alert-error",
+  }[type];
+
   return (
-    <div className={`toast toast-end`} role="alert" aria-live="polite">
-      <div className={`alert alert-${type}`}>
+    <div className="toast toast-end toast-top z-50" role="alert" aria-live="polite">
+      <div className={`alert ${alertClass} shadow-lg`}>
         <span>{message}</span>
-        <button onClick={onClose} aria-label="Dismiss notification">
-          <X className="h-4 w-4" />
+        <button
+          onClick={onClose}
+          className="btn btn-ghost btn-xs"
+          aria-label="Dismiss notification"
+        >
+          ✕
         </button>
       </div>
     </div>
   );
 }
+```
 
-// app/components/common/Carousel.tsx
-export function Carousel({ items, autoPlay }: CarouselProps) {
+```typescript
+// app/components/common/Modal.tsx
+import { useEffect, useRef, type ReactNode } from "react";
+
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: ReactNode;
+  actions?: ReactNode;
+  size?: "sm" | "md" | "lg";
+}
+
+export function Modal({ isOpen, onClose, title, children, actions, size = "md" }: ModalProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    if (isOpen) {
+      dialog.showModal();
+    } else {
+      dialog.close();
+    }
+  }, [isOpen]);
+
+  const sizeClass = {
+    sm: "max-w-sm",
+    md: "max-w-md",
+    lg: "max-w-2xl",
+  }[size];
+
   return (
-    <div className="carousel w-full" role="region" aria-label="Image carousel">
+    <dialog
+      ref={dialogRef}
+      className="modal"
+      onClose={onClose}
+      aria-labelledby="modal-title"
+    >
+      <div className={`modal-box ${sizeClass}`}>
+        <h3 id="modal-title" className="font-bold text-lg">
+          {title}
+        </h3>
+        <button
+          onClick={onClose}
+          className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          aria-label="Close modal"
+        >
+          ✕
+        </button>
+        <div className="py-4">{children}</div>
+        {actions && <div className="modal-action">{actions}</div>}
+      </div>
+      <form method="dialog" className="modal-backdrop">
+        <button onClick={onClose} aria-label="Close">close</button>
+      </form>
+    </dialog>
+  );
+}
+```
+
+```typescript
+// app/components/common/Carousel.tsx
+import { useState, useEffect, useCallback } from "react";
+
+interface CarouselProps {
+  items: { id: string; content: ReactNode; alt?: string }[];
+  autoPlay?: boolean;
+  interval?: number;
+}
+
+export function Carousel({ items, autoPlay = false, interval = 5000 }: CarouselProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const goToNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % items.length);
+  }, [items.length]);
+
+  const goToPrev = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
+  }, [items.length]);
+
+  useEffect(() => {
+    if (!autoPlay) return;
+    const timer = setInterval(goToNext, interval);
+    return () => clearInterval(timer);
+  }, [autoPlay, interval, goToNext]);
+
+  return (
+    <div
+      className="carousel w-full relative"
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="Image carousel"
+    >
       {items.map((item, index) => (
         <div
           key={item.id}
-          id={`slide${index}`}
-          className="carousel-item relative w-full"
+          className={`carousel-item w-full transition-opacity duration-500 ${
+            index === currentIndex ? "block" : "hidden"
+          }`}
           role="group"
+          aria-roledescription="slide"
           aria-label={`Slide ${index + 1} of ${items.length}`}
+          aria-hidden={index !== currentIndex}
         >
           {item.content}
-          <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
-            <a href={`#slide${index - 1}`} className="btn btn-circle" aria-label="Previous slide">❮</a>
-            <a href={`#slide${index + 1}`} className="btn btn-circle" aria-label="Next slide">❯</a>
-          </div>
         </div>
       ))}
+      
+      {/* Navigation buttons */}
+      <div className="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
+        <button
+          onClick={goToPrev}
+          className="btn btn-circle btn-primary"
+          aria-label="Previous slide"
+        >
+          ❮
+        </button>
+        <button
+          onClick={goToNext}
+          className="btn btn-circle btn-primary"
+          aria-label="Next slide"
+        >
+          ❯
+        </button>
+      </div>
+
+      {/* Indicators */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+        {items.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            className={`w-3 h-3 rounded-full transition-colors ${
+              index === currentIndex ? "bg-primary" : "bg-base-300"
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+            aria-current={index === currentIndex ? "true" : undefined}
+          />
+        ))}
+      </div>
     </div>
   );
 }
 ```
+
+### Available Built-in Themes Reference
+
+DaisyUI provides these built-in themes that can be customized:
+
+| Theme       | Type  | Description                        |
+| ----------- | ----- | ---------------------------------- |
+| light       | Light | Default light theme                |
+| dark        | Dark  | Default dark theme                 |
+| cupcake     | Light | Soft, pastel colors                |
+| bumblebee   | Light | Yellow-focused                     |
+| emerald     | Light | Green-focused                      |
+| corporate   | Light | Professional, muted                |
+| synthwave   | Dark  | Retro neon aesthetic               |
+| retro       | Light | Vintage, warm tones                |
+| cyberpunk   | Dark  | Futuristic, high contrast          |
+| valentine   | Light | Pink/red romantic theme            |
+| halloween   | Dark  | Orange/black spooky theme          |
+| garden      | Light | Nature-inspired greens             |
+| forest      | Dark  | Dark green forest theme            |
+| aqua        | Dark  | Blue/cyan aquatic theme            |
+| lofi        | Light | Minimal, grayscale                 |
+| pastel      | Light | Soft pastel colors                 |
+| fantasy     | Light | Magical purple theme               |
+| wireframe   | Light | Sketch/wireframe style             |
+| black       | Dark  | Pure black and white               |
+| luxury      | Dark  | Gold and black premium             |
+| dracula     | Dark  | Popular dracula color scheme       |
+| cmyk        | Light | Cyan, magenta, yellow, key         |
+| autumn      | Light | Warm autumn colors                 |
+| business    | Dark  | Dark professional theme            |
+| acid        | Light | Bright neon colors                 |
+| lemonade    | Light | Fresh yellow/green                 |
+| night       | Dark  | Blue-tinted night theme            |
+| coffee      | Dark  | Brown coffee tones                 |
+| winter      | Light | Cool blue/white winter             |
+| dim         | Dark  | Dimmed, easy on eyes               |
+| nord        | Light | Nord color palette                 |
+| sunset      | Light | Warm sunset gradient               |
 
 ---
 

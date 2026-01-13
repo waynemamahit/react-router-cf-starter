@@ -88,10 +88,12 @@ openspec/
 
 Key areas to understand:
 
-- **Tech Stack**: React 19, TypeScript 5, Hono, TailwindCSS 4, DaisyUI
-- **Architecture**: Clean architecture with layered design
+- **Tech Stack**: React 19, TypeScript 5, Hono, TailwindCSS 4, DaisyUI, Drizzle ORM
+- **Architecture**: Clean architecture with layered design and SOLID principles
+- **Database**: Separate schemas for D1 (SQLite) and Hyperdrive (PostgreSQL)
 - **Testing**: 90%+ coverage requirement with Vitest + React Testing Library
-- **Cloudflare Services**: D1, KV, R2, Durable Objects, Queues, Workers AI
+- **Accessibility & SEO**: Semantic HTML, ARIA roles, meta tags, structured data
+- **Cloudflare Services**: D1, KV, R2, Durable Objects, Workers AI, Vectorize
 
 #### Step 2: Understand the Architecture
 
