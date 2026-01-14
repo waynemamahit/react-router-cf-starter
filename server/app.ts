@@ -29,7 +29,7 @@ app.all("*", async (c) => {
 
   // Call React Router’s handler with proper context
   return await requestHandler(request, {
-    cloudflare: { env, ctx },
+    cloudflare: { env, ctx: ctx as ExecutionContext },
   });
 });
 
