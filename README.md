@@ -1,562 +1,485 @@
-# react-router-cf-starter
+# React Router Cloudflare Starter
 
-A full-stack React Router v7 starter tailored for Cloudflare Workers. This template provides server-side rendering (SSR) on Cloudflare, client hydration, and comprehensive integrations for Durable Objects, KV, D1, Hyperdrive, R2, Queues, and Workers AI.
+A production-ready full-stack starter built on **React Router v7 (Framework Mode)** with **Cloudflare Workers**. Features SSR, comprehensive Cloudflare service integrations, and specification-driven development with OpenSpec.
 
 ## Key Features
 
-- **Server-side rendering** with React Router v7 and a worker-based server entry (`app/entry.server.tsx`).
-- **Cloudflare Workers + Wrangler** deployment scaffolding.
-- **Clean Architecture** with domain-driven design and SOLID principles.
-- **Layered Architecture** with facade/engine patterns for business logic orchestration.
-- **Drizzle ORM** for type-safe database access with separate schemas for D1 and Hyperdrive.
-- **Durable Objects** for real-time features, queues, and PubSub messaging.
-- **KV, D1, Hyperdrive, R2, Vectorize, Workers AI** examples and bindings support.
-- **TypeScript** with strict type checking.
-- **Vite** dev server with HMR for client-side development.
-- **Vitest** for comprehensive testing (90%+ coverage target).
-- **TailwindCSS + DaisyUI** for responsive, accessible UI design.
-- **Biome.js** for fast formatting and linting.
-- **Zod** for runtime schema validation.
+- **React Router v7** — Framework mode with SSR, data loading, and actions
+- **Cloudflare Workers** — Edge deployment with D1, Hyperdrive, KV, R2, Durable Objects, Workers AI, Vectorize
+- **TypeScript** — Strict type safety with modern patterns
+- **Hono** — Lightweight backend API framework
+- **TailwindCSS + DaisyUI** — Responsive, accessible UI (light theme default)
+- **Drizzle ORM** — Type-safe database with separate D1/Hyperdrive schemas
+- **Vitest + React Testing Library** — 90%+ coverage requirement
+- **Biome.js** — Fast formatting and linting
+- **Zod** — Runtime schema validation
+- **Awilix** — Dependency injection for SOLID architecture
+- **i18next** — Internationalization (English + Indonesian)
 
 ---
 
-## OpenSpec Workflow Guide
-
-OpenSpec is a specification-driven development approach that ensures consistency and quality across the project. Follow this workflow when starting or contributing to the project.
-
-### Initial Setup
-
-#### 1. Clone and Install Dependencies
-
-```bash
-git clone <repository-url>
-cd react-router-cf-starter
-pnpm install
-```
-
-#### 2. Start Local Services (PostgreSQL for Hyperdrive)
-
-```bash
-docker-compose up -d
-```
-
-#### 3. Configure Environment Variables
-
-Copy the example environment file and configure your local settings:
-
-```bash
-cp .dev.vars.example .dev.vars
-```
-
-Edit `.dev.vars` with your Cloudflare resource IDs (for staging/production) or use local defaults for development.
-
-#### 4. Run Database Migrations
-
-Generate and apply migrations for both databases:
-
-```bash
-# Generate migrations
-pnpm db:generate:d1
-pnpm db:generate:hyperdrive
-
-# Apply D1 migrations locally
-pnpm db:migrate:d1
-
-# Apply Hyperdrive (PostgreSQL) migrations
-pnpm db:migrate:hyperdrive
-```
-
-#### 5. Run Development Server
-
-```bash
-pnpm dev
-```
-
----
-
-### OpenSpec Development Workflow
-
-#### Step 1: Review Project Context
-
-Before making any changes, read the OpenSpec documentation:
-
-```
-openspec/
-├── project.md     # Project context, architecture, conventions
-└── AGENTS.md      # AI agent instructions
-```
-
-Key areas to understand:
-
-- **Tech Stack**: React 19, TypeScript 5, Hono, TailwindCSS 4, DaisyUI, Drizzle ORM
-- **Architecture**: Clean architecture with layered design and SOLID principles
-- **Database**: Separate schemas for D1 (SQLite) and Hyperdrive (PostgreSQL)
-- **Testing**: 90%+ coverage requirement with Vitest + React Testing Library
-- **Accessibility & SEO**: Semantic HTML, ARIA roles, meta tags, structured data
-- **Cloudflare Services**: D1, KV, R2, Durable Objects, Workers AI, Vectorize
-
-#### Step 2: Understand the Architecture
-
-The project follows a **layered architecture**:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Presentation Layer                        │
-│  (React Components, Routes, UI Logic)                        │
-├─────────────────────────────────────────────────────────────┤
-│                    Application Layer                         │
-│  (Facades/Engines - Business Logic Orchestration)            │
-├─────────────────────────────────────────────────────────────┤
-│                      Domain Layer                            │
-│  (Entities, Value Objects, Domain Services, Interfaces)      │
-├─────────────────────────────────────────────────────────────┤
-│                   Infrastructure Layer                       │
-│  (Services: API, DB, External Services, Cloudflare Bindings) │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**Key Principles:**
-
-- **Domain Layer**: Contains business logic, entities, and interfaces. No dependencies on infrastructure.
-- **Infrastructure Layer**: Implements domain interfaces with concrete services (D1, KV, R2, etc.).
-- **Application Layer**: Orchestrates services via facades/engines.
-- **Presentation Layer**: React components consuming application layer.
-
-#### Step 3: Feature Development Process
-
-##### 3.1 Define Domain Models
-
-Create domain entities and interfaces in the domain layer:
-
-```typescript
-// server/domain/entities/user.ts or app/core/domain/entities/user.ts
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  createdAt: Date;
-}
-
-// server/domain/interfaces/user-repository.ts
-export interface UserRepository {
-  findById(id: string): Promise<User | null>;
-  save(user: User): Promise<User>;
-  delete(id: string): Promise<void>;
-}
-```
-
-##### 3.2 Create Zod Schemas
-
-Define validation schemas in the shared schemas directory:
-
-```typescript
-// shared/schemas/user.schema.ts
-import { z } from "zod";
-
-export const createUserSchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(2).max(100),
-});
-
-export type CreateUserInput = z.infer<typeof createUserSchema>;
-```
-
-##### 3.3 Implement Infrastructure Services
-
-Create concrete implementations in the infrastructure layer:
-
-```typescript
-// server/infrastructure/database/d1-user-repository.ts
-import type { D1Database } from "@cloudflare/workers-types";
-import type { User, UserRepository } from "../../domain/interfaces/user-repository";
-
-export class D1UserRepository implements UserRepository {
-  constructor(private readonly db: D1Database) {}
-
-  async findById(id: string): Promise<User | null> {
-    const result = await this.db
-      .prepare("SELECT * FROM users WHERE id = ?")
-      .bind(id)
-      .first();
-    return result ? this.toDomain(result) : null;
-  }
-
-  // ... other methods
-}
-```
-
-##### 3.4 Create Application Facades
-
-Orchestrate services in the application layer:
-
-```typescript
-// server/application/facades/user-facade.ts
-export class UserFacade {
-  constructor(
-    private readonly userRepository: UserRepository,
-    private readonly cacheService: CacheService
-  ) {}
-
-  async createUser(input: CreateUserInput): Promise<User> {
-    const user = await this.userRepository.save(input);
-    await this.cacheService.set(`user:${user.id}`, user);
-    return user;
-  }
-}
-```
-
-##### 3.5 Build API Routes
-
-Create Hono API routes using facades:
-
-```typescript
-// server/api/routes/users.ts
-import { Hono } from "hono";
-import { zValidator } from "@hono/zod-validator";
-import { createUserSchema } from "../../shared/schemas/user.schema";
-
-const users = new Hono();
-
-users.post("/", zValidator("json", createUserSchema), async (c) => {
-  const data = c.req.valid("json");
-  const userFacade = c.get("userFacade");
-  const user = await userFacade.createUser(data);
-  return c.json({ user }, 201);
-});
-
-export { users };
-```
-
-##### 3.6 Create React Components
-
-Build accessible, responsive components:
-
-```tsx
-// app/components/features/UserProfile.tsx
-interface UserProfileProps {
-  user: User;
-  onEdit: (id: string) => void;
-}
-
-export function UserProfile({ user, onEdit }: UserProfileProps) {
-  return (
-    <article className="card bg-base-100 shadow-xl">
-      <div className="card-body">
-        <h2 className="card-title">{user.name}</h2>
-        <p className="text-base-content/70">{user.email}</p>
-        <div className="card-actions justify-end">
-          <button
-            className="btn btn-primary"
-            onClick={() => onEdit(user.id)}
-            aria-label={`Edit ${user.name}'s profile`}
-          >
-            Edit Profile
-          </button>
-        </div>
-      </div>
-    </article>
-  );
-}
-```
-
-#### Step 4: Write Tests
-
-##### Unit Tests for Components
-
-```typescript
-// tests/unit/components/UserProfile.test.tsx
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi } from "vitest";
-import { UserProfile } from "../../../app/components/features/UserProfile";
-
-describe("UserProfile", () => {
-  const mockUser = {
-    id: "1",
-    email: "john@example.com",
-    name: "John Doe",
-    createdAt: new Date(),
-  };
-
-  it("displays user information correctly", () => {
-    render(<UserProfile user={mockUser} onEdit={vi.fn()} />);
-
-    expect(screen.getByRole("heading", { name: /john doe/i })).toBeInTheDocument();
-    expect(screen.getByText(/john@example\.com/i)).toBeInTheDocument();
-  });
-
-  it("calls onEdit when edit button is clicked", async () => {
-    const onEdit = vi.fn();
-    render(<UserProfile user={mockUser} onEdit={onEdit} />);
-
-    await userEvent.click(screen.getByRole("button", { name: /edit/i }));
-
-    expect(onEdit).toHaveBeenCalledWith("1");
-  });
-});
-```
-
-##### Integration Tests for API
-
-```typescript
-// tests/integration/api/users.test.ts
-import { describe, it, expect, beforeEach } from "vitest";
-import { createTestApp } from "../../fixtures/test-app";
-
-describe("Users API", () => {
-  let app: ReturnType<typeof createTestApp>;
-
-  beforeEach(() => {
-    app = createTestApp();
-  });
-
-  it("POST /api/users creates a user", async () => {
-    const response = await app.request("/api/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: "test@example.com",
-        name: "Test User",
-      }),
-    });
-
-    expect(response.status).toBe(201);
-    const data = await response.json();
-    expect(data.user).toMatchObject({
-      email: "test@example.com",
-      name: "Test User",
-    });
-  });
-});
-```
-
-#### Step 5: Run Quality Checks
-
-```bash
-# Run linting
-pnpm lint
-
-# Run type checking
-pnpm typecheck
-
-# Run tests with coverage
-pnpm test --coverage
-```
-
-Ensure coverage is above 90% before submitting changes.
-
----
-
-## Project Layout
-
-```
-├── app/                    # Frontend React application
-│   ├── components/         # React components
-│   ├── core/               # Domain and application layers
-│   ├── hooks/              # Custom React hooks
-│   ├── routes/             # React Router routes
-│   ├── styles/             # Global styles and themes
-│   └── utils/              # Utility functions
-├── server/                 # Backend application
-│   ├── api/                # Hono API routes
-│   ├── application/        # Facades and engines
-│   ├── domain/             # Domain entities and interfaces
-│   ├── infrastructure/     # Service implementations
-│   └── durable-objects/    # Durable Object classes
-├── shared/                 # Shared code (frontend & backend)
-│   ├── schemas/            # Zod validation schemas
-│   ├── types/              # Shared TypeScript types
-│   └── utils/              # Shared utilities
-├── tests/                  # Test files
-│   ├── unit/               # Unit tests
-│   ├── integration/        # Integration tests
-│   └── fixtures/           # Test fixtures and mocks
-├── openspec/               # OpenSpec documentation
-├── public/                 # Static assets
-├── scripts/                # Build and utility scripts
-└── wrangler.jsonc          # Cloudflare Worker configuration
-```
+## Table of Contents
+
+1. [Prerequisites](#prerequisites)
+2. [Installation](#installation)
+3. [Initialize OpenSpec](#initialize-openspec)
+4. [Environment Setup](#environment-setup)
+5. [Database Setup](#database-setup)
+6. [Development](#development)
+7. [Testing](#testing)
+8. [Building & Deployment](#building--deployment)
+9. [Project Structure](#project-structure)
+10. [Architecture Overview](#architecture-overview)
+11. [Cloudflare Services](#cloudflare-services)
+12. [Quick Reference](#quick-reference)
 
 ---
 
 ## Prerequisites
 
-- Node.js 24+ LTS
-- `pnpm` (package manager)
-- Wrangler CLI (`npm i -g wrangler`) for Cloudflare deployments
-- Docker (for local PostgreSQL used by Hyperdrive)
+Before starting, ensure you have the following installed:
+
+| Tool | Version | Purpose |
+|------|---------|---------|
+| **Node.js** | 20+ LTS | JavaScript runtime |
+| **PNPM** | 8+ | Package manager |
+| **Docker** | Latest | Local PostgreSQL for Hyperdrive |
+| **Wrangler CLI** | Latest | Cloudflare deployments |
+| **Git** | Latest | Version control |
+
+### Install Global Tools
+
+```bash
+# Install PNPM (if not installed)
+npm install -g pnpm
+
+# Install Wrangler CLI
+npm install -g wrangler
+
+# Login to Cloudflare (for deployments)
+wrangler login
+```
 
 ---
 
 ## Installation
 
-Install dependencies with `pnpm`:
+### Step 1: Clone the Repository
+
+```bash
+git clone <repository-url>
+cd react-router-cf-starter
+```
+
+### Step 2: Install Dependencies
 
 ```bash
 pnpm install
+```
+
+This installs all project dependencies including:
+- React, React Router, TypeScript
+- TailwindCSS, DaisyUI, Lucide React
+- Hono, Drizzle ORM, Zod
+- Vitest, React Testing Library
+- i18next, react-i18next
+- Awilix (dependency injection)
+
+### Step 3: Install OpenSpec Fission AI (Optional but Recommended)
+
+OpenSpec Fission AI enhances the development workflow with AI-assisted specification management.
+
+```bash
+# Install OpenSpec CLI globally
+npm install -g @fission-ai/openspec@latest
+
+# Verify installation
+openspec --version
+```
+
+> **Note:** OpenSpec Fission AI integrates with your IDE (VS Code, Windsurf) for AI-assisted development. See [OpenSpec Documentation](https://openspec.dev) for IDE extensions.
+
+---
+
+## Initialize OpenSpec
+
+OpenSpec provides specification-driven development for consistent, high-quality code.
+
+### Step 1: Review Project Specifications
+
+Read the project context before making changes:
+
+```bash
+# View project specifications
+cat openspec/project.md
+
+# View AI agent instructions
+cat openspec/AGENTS.md
+```
+
+### Step 2: Understand the Specifications
+
+```
+openspec/
+├── project.md      # Project context, tech stack, conventions
+├── AGENTS.md       # AI assistant instructions
+├── specs/          # Feature specifications
+└── changes/        # Change proposals
+    └── archive/    # Completed changes
+```
+
+**Key files to review:**
+- `openspec/project.md` — Tech stack, architecture, coding conventions, testing strategy
+- `openspec/AGENTS.md` — Instructions for AI assistants working on this project
+
+### Step 3: OpenSpec Workflow Commands
+
+When developing features, use OpenSpec workflows:
+
+```bash
+# Create a new change proposal
+# Use: /openspec-proposal in your AI assistant
+
+# Apply an approved change
+# Use: /openspec-apply in your AI assistant
+
+# Archive a completed change
+# Use: /openspec-archive in your AI assistant
+```
+
+---
+
+## Environment Setup
+
+### Step 1: Create Environment File
+
+```bash
+cp .dev.vars.example .dev.vars
+```
+
+### Step 2: Configure Environment Variables
+
+Edit `.dev.vars` with your settings:
+
+```bash
+# .dev.vars
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/app
+SESSION_SECRET=your-secret-key-here
+
+# Cloudflare Resource IDs (for staging/production)
+# Leave empty for local development
+```
+
+### Step 3: Start Local Services
+
+Start PostgreSQL for Hyperdrive development:
+
+```bash
+docker-compose up -d
+```
+
+Verify the service is running:
+
+```bash
+docker-compose ps
+```
+
+---
+
+## Database Setup
+
+This project uses **Drizzle ORM** with separate schemas for D1 (SQLite) and Hyperdrive (PostgreSQL).
+
+### Step 1: Generate Migrations
+
+```bash
+# Generate D1 (SQLite) migrations
+pnpm db:generate:d1
+
+# Generate Hyperdrive (PostgreSQL) migrations
+pnpm db:generate:hyperdrive
+```
+
+### Step 2: Apply Migrations
+
+```bash
+# Apply D1 migrations locally
+pnpm db:migrate:d1
+
+# Apply Hyperdrive migrations to local PostgreSQL
+pnpm db:migrate:hyperdrive
+```
+
+### Step 3: View Database (Optional)
+
+```bash
+# Open D1 Drizzle Studio
+pnpm db:studio:d1
+
+# Open Hyperdrive Drizzle Studio
+pnpm db:studio:hyperdrive
 ```
 
 ---
 
 ## Development
 
-Run the Vite dev server and local server proxy:
+### Start Development Server
 
 ```bash
 pnpm dev
 ```
 
-This starts the client dev server with HMR and the server entry used for SSR. By default the client is available at `http://localhost:5173`.
+This starts:
+- **Vite dev server** with HMR at `http://localhost:5173`
+- **Cloudflare Workers** local runtime for SSR
+- **Wrangler** for local Cloudflare bindings (D1, KV, etc.)
 
-If you rely on Cloudflare staging resources locally (Hyperdrive/D1/KV), follow the local setup in `GUIDE.md` and populate `.dev.vars` before running.
+### Code Quality Commands
+
+```bash
+# Run Biome linter
+pnpm lint
+
+# Run Biome formatter
+pnpm format
+
+# Run both lint and format
+pnpm check
+
+# Run TypeScript type checking
+pnpm typecheck
+```
 
 ---
 
 ## Testing
 
-Run all tests:
+### Run Tests
 
 ```bash
+# Run all tests
 pnpm test
-```
 
-Run tests with Vitest UI:
+# Run tests in watch mode
+pnpm test:watch
 
-```bash
+# Run tests with UI
 pnpm test:ui
+
+# Run tests with coverage report
+pnpm test:coverage
 ```
 
-Run tests with coverage report:
+### Coverage Requirements
 
-```bash
-pnpm test --coverage
-```
-
-**Coverage Requirement:** Maintain 90%+ coverage for all components and API endpoints.
+- **Minimum coverage: 90%** for all metrics
+- Tests are located in `__tests__/` directories alongside source files
+- Use `*.test.ts` or `*.test.tsx` for unit tests
+- Use `*.integration.test.ts` for integration tests
 
 ---
 
-## Previewing the Production Build Locally
+## Building & Deployment
 
-Build and preview using Wrangler with staging environment bindings:
+### Build for Production
 
 ```bash
 pnpm build
-pnpm preview
 ```
 
-To preview with remote resources:
+### Preview Production Build
 
 ```bash
+# Preview with local bindings
+pnpm preview
+
+# Preview with remote Cloudflare resources
 pnpm preview:remote
 ```
 
----
-
-## Building for Production
-
-Create a production build:
+### Deploy to Cloudflare
 
 ```bash
-pnpm build
-```
-
----
-
-## Deployment
-
-Deployment uses the Wrangler CLI. Set up a Cloudflare API token and add it to your CI/CD provider (see `GUIDE.md`).
-
-For preview deployments and version management:
-
-```bash
+# Upload new version
 npx wrangler versions upload
+
+# Deploy version
 npx wrangler versions deploy
 ```
 
 ---
 
-## Local Hyperdrive (PostgreSQL) for Development
+## Project Structure
 
-This project uses Hyperdrive which requires PostgreSQL for local development. A `docker-compose.yml` is included:
-
-```bash
-docker-compose up -d
+```
+├── app/                      # Frontend (React)
+│   ├── components/           # React components
+│   │   ├── __tests__/        # Component tests
+│   │   ├── ui/               # Base UI components
+│   │   └── features/         # Feature components
+│   ├── routes/               # React Router routes
+│   ├── hooks/                # Custom React hooks
+│   ├── containers/           # DI containers (Awilix)
+│   ├── engines/              # Business logic (facade layer)
+│   ├── services/             # Frontend services
+│   ├── types/                # TypeScript types
+│   ├── i18n/                 # Frontend translations
+│   │   └── locales/          # en/, id/
+│   ├── styles/               # Global styles
+│   ├── app.css               # TailwindCSS + DaisyUI config
+│   ├── root.tsx              # App root
+│   └── entry.server.tsx      # SSR entry
+│
+├── server/                   # Backend (Hono)
+│   ├── routes/               # API routes
+│   │   └── v1/               # Versioned API
+│   ├── containers/           # DI containers (Awilix)
+│   ├── engines/              # Business logic (facade layer)
+│   ├── services/             # Cloudflare service integrations
+│   ├── middlewares/          # Hono middlewares
+│   ├── i18n/                 # Backend translations
+│   ├── durable_objects/      # Durable Objects classes
+│   └── app.ts                # Hono app entry
+│
+├── db/                       # Database schemas
+│   ├── d1/                   # D1 (SQLite)
+│   │   ├── schema/           # Drizzle schemas
+│   │   └── migrations/       # D1 migrations
+│   └── hyperdrive/           # Hyperdrive (PostgreSQL)
+│       ├── schema/           # Drizzle schemas
+│       └── migrations/       # PostgreSQL migrations
+│
+├── openspec/                 # OpenSpec specifications
+│   ├── project.md            # Project context
+│   ├── AGENTS.md             # AI instructions
+│   ├── specs/                # Feature specs
+│   └── changes/              # Change proposals
+│
+├── public/                   # Static assets
+├── scripts/                  # Build scripts
+├── .dev.vars.example         # Environment template
+├── docker-compose.yml        # Local PostgreSQL
+├── wrangler.jsonc            # Cloudflare config
+├── biome.json                # Biome config
+├── tailwind.config.js        # TailwindCSS config
+└── vitest.config.ts          # Vitest config
 ```
 
-Configure your `.dev.vars` with staging resource IDs (see `GUIDE.md`) before running preview/dev commands that interact with Cloudflare-managed resources.
+---
+
+## Architecture Overview
+
+This project follows a **layered architecture** with SOLID principles and dependency injection:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                  Routes / Controllers                    │
+│            (React Router routes / Hono routes)           │
+└─────────────────────┬───────────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────────┐
+│                 Engine / Facade Layer                    │
+│       (Business logic, orchestrates services)            │
+│                                                          │
+│  • Coordinates multiple services                         │
+│  • Contains business rules and validation                │
+│  • Transaction boundaries                                │
+└─────────────────────┬───────────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────────┐
+│                    Service Layer                         │
+│         (Direct integration with externals)              │
+│                                                          │
+│  D1Service │ HyperdriveService │ KVService │ R2Service   │
+│  DOService │ VectorService │ AIService │ APIService      │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Key Principles:**
+- **Engine Layer** — Business logic and orchestration (no direct external calls)
+- **Service Layer** — Direct integrations with D1, KV, R2, APIs, etc.
+- **Dependency Injection** — Awilix containers for testability and flexibility
 
 ---
 
-## Cloudflare Services Overview
+## Cloudflare Services
 
-| Service         | Purpose                                       | Binding Name    |
-| --------------- | --------------------------------------------- | --------------- |
-| D1              | SQLite database for structured data           | `DB`            |
-| Hyperdrive      | PostgreSQL connection pooling                 | `HYPERDRIVE`    |
-| KV              | Key-value caching, sessions, cross-DO state   | `CACHE`         |
-| R2              | Object storage for static files               | `STORAGE`       |
-| Durable Objects | Real-time, WebSockets, queues, PubSub         | `REALTIME`      |
-| Queue Manager   | Background job processing (DO + KV)           | `QUEUE_MANAGER` |
-| PubSub          | Event-driven messaging (DO + KV)              | `PUBSUB`        |
-| Workers AI      | AI/ML inference                               | `AI`            |
-| Vectorize       | Vector database for embeddings                | `VECTOR_DB`     |
-
----
-
-## Where to Look
-
-- Server SSR entry: `app/entry.server.tsx`
-- Routes: `app/routes.ts` and `app/routes/*.tsx`
-- API routes: `server/api/routes/`
-- Worker server + DOs: `server/` and `server/durable-objects/`
-- Domain layer: `server/domain/` and `app/core/domain/`
-- OpenSpec context: `openspec/project.md`
-- Built artifacts: `build/`
+| Service | Purpose | Binding | Local Testing |
+|---------|---------|---------|---------------|
+| **D1** | SQLite database | `DB` | `wrangler d1` |
+| **Hyperdrive** | PostgreSQL pooling | `HYPERDRIVE` | Docker Compose |
+| **KV** | Key-value cache | `KV` | `wrangler kv` |
+| **R2** | Object storage | `R2` | `wrangler r2` |
+| **Durable Objects** | Real-time, queues | `COUNTER` | `wrangler dev` |
+| **Vectorize** | Vector embeddings | `VECTOR` | `wrangler vectorize` |
+| **Workers AI** | AI inference | `AI` | `wrangler ai` |
 
 ---
 
 ## Quick Reference
 
 ```bash
-# Development
-pnpm dev              # Start development server
-pnpm lint             # Run Biome linting
-pnpm typecheck        # Run TypeScript type checking
+# ─────────────────────────────────────────────────────────
+# INSTALLATION
+# ─────────────────────────────────────────────────────────
+pnpm install                    # Install dependencies
+docker-compose up -d            # Start local PostgreSQL
 
-# Testing
-pnpm test             # Run all tests
-pnpm test:ui          # Run tests with Vitest UI
-pnpm test --coverage  # Run tests with coverage report
+# ─────────────────────────────────────────────────────────
+# DEVELOPMENT
+# ─────────────────────────────────────────────────────────
+pnpm dev                        # Start dev server
+pnpm lint                       # Run Biome linter
+pnpm format                     # Run Biome formatter
+pnpm check                      # Run lint + format
+pnpm typecheck                  # TypeScript check
 
-# Database (Drizzle ORM)
-pnpm db:generate:d1        # Generate D1 migrations
-pnpm db:generate:hyperdrive # Generate Hyperdrive migrations
-pnpm db:migrate:d1         # Apply D1 migrations locally
-pnpm db:migrate:d1:remote  # Apply D1 migrations to remote
-pnpm db:migrate:hyperdrive # Apply Hyperdrive migrations
-pnpm db:studio:d1          # Open D1 Drizzle Studio
-pnpm db:studio:hyperdrive  # Open Hyperdrive Drizzle Studio
+# ─────────────────────────────────────────────────────────
+# DATABASE
+# ─────────────────────────────────────────────────────────
+pnpm db:generate:d1             # Generate D1 migrations
+pnpm db:generate:hyperdrive     # Generate Hyperdrive migrations
+pnpm db:migrate:d1              # Apply D1 migrations
+pnpm db:migrate:hyperdrive      # Apply Hyperdrive migrations
+pnpm db:studio:d1               # Open D1 Drizzle Studio
+pnpm db:studio:hyperdrive       # Open Hyperdrive Drizzle Studio
 
-# Build & Deploy
-pnpm build            # Build for production
-pnpm preview          # Preview production build locally
-pnpm preview:remote   # Preview with remote Cloudflare resources
+# ─────────────────────────────────────────────────────────
+# TESTING
+# ─────────────────────────────────────────────────────────
+pnpm test                       # Run all tests
+pnpm test:watch                 # Watch mode
+pnpm test:ui                    # Vitest UI
+pnpm test:coverage              # Coverage report (≥90%)
 
-# Local Services
-docker-compose up -d  # Start PostgreSQL for Hyperdrive
-docker-compose down   # Stop local services
+# ─────────────────────────────────────────────────────────
+# BUILD & DEPLOY
+# ─────────────────────────────────────────────────────────
+pnpm build                      # Build for production
+pnpm preview                    # Preview locally
+pnpm preview:remote             # Preview with remote resources
+
+# ─────────────────────────────────────────────────────────
+# LOCAL SERVICES
+# ─────────────────────────────────────────────────────────
+docker-compose up -d            # Start PostgreSQL
+docker-compose down             # Stop PostgreSQL
+docker-compose logs -f          # View logs
 ```
 
 ---
 
-## Need Help?
+## Additional Resources
 
-If you want, I can:
-
-- Run a quick repo scan to verify scripts and `package.json`.
-- Update CI examples for GitHub Actions/Bitbucket pipelines.
+- **OpenSpec Project Context:** `openspec/project.md`
+- **Detailed Setup Guide:** `GUIDE.md`
+- **React Router Docs:** https://reactrouter.com
+- **Cloudflare Workers Docs:** https://developers.cloudflare.com/workers
+- **DaisyUI Themes:** https://daisyui.com/docs/themes
 
 ---
 
-Happy hacking — open an issue or ask if you want a tailored CI/CD example for your provider.
+## License
+
+MIT
