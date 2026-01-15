@@ -316,7 +316,7 @@ npx wrangler versions deploy
 ├── app/                      # Frontend (React)
 │   ├── components/           # React components
 │   │   ├── __tests__/        # Component tests
-│   │   ├── ui/               # Base UI components
+│   │   ├── ui/               # Base UI components (Toast, Modal, etc.)
 │   │   └── features/         # Feature components
 │   ├── routes/               # React Router routes
 │   ├── hooks/                # Custom React hooks
@@ -324,11 +324,12 @@ npx wrangler versions deploy
 │   ├── engines/              # Business logic (facade layer)
 │   ├── services/             # Frontend services
 │   ├── types/                # TypeScript types
+│   ├── schemas/              # Zod schemas
 │   ├── i18n/                 # Frontend translations
 │   │   └── locales/          # en/, id/
 │   ├── styles/               # Global styles
 │   ├── app.css               # TailwindCSS + DaisyUI config
-│   ├── root.tsx              # App root
+│   ├── root.tsx              # App root with theme/language
 │   └── entry.server.tsx      # SSR entry
 │
 ├── server/                   # Backend (Hono)
@@ -338,8 +339,9 @@ npx wrangler versions deploy
 │   ├── engines/              # Business logic (facade layer)
 │   ├── services/             # Cloudflare service integrations
 │   ├── middlewares/          # Hono middlewares
+│   ├── schemas/              # Zod schemas
 │   ├── i18n/                 # Backend translations
-│   ├── durable_objects/      # Durable Objects classes
+│   ├── durable-objects/      # Durable Objects classes
 │   └── app.ts                # Hono app entry
 │
 ├── db/                       # Database schemas
@@ -350,11 +352,17 @@ npx wrangler versions deploy
 │       ├── schema/           # Drizzle schemas
 │       └── migrations/       # PostgreSQL migrations
 │
+├── shared/                   # Shared code (frontend + backend)
+│   ├── types/                # Shared TypeScript types
+│   ├── schemas/              # Shared Zod schemas
+│   └── utils/                # Shared utilities
+│
 ├── openspec/                 # OpenSpec specifications
 │   ├── project.md            # Project context
 │   ├── AGENTS.md             # AI instructions
 │   ├── specs/                # Feature specs
 │   └── changes/              # Change proposals
+│       └── archive/          # Completed changes
 │
 ├── public/                   # Static assets
 ├── scripts/                  # Build scripts

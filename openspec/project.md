@@ -2,65 +2,73 @@
 
 ## Purpose
 
-A modern full-stack web application starter built on **React Router v7 (Framework Mode)** with **Cloudflare Workers** as the deployment target. This project serves as a production-ready foundation for building scalable, accessible, and internationalized web applications leveraging Cloudflare's edge computing ecosystem.
+A production-ready full-stack starter template built on **React Router v7 (Framework Mode)** with **Cloudflare Workers**. This project provides a scalable, maintainable foundation for building modern web applications with SSR, comprehensive Cloudflare service integrations, and specification-driven development using OpenSpec.
+
+**Goals:**
+- Provide a clean, layered architecture following SOLID principles
+- Enable rapid feature development with type-safe patterns
+- Ensure high code quality with comprehensive testing (90%+ coverage)
+- Support internationalization (English + Indonesian)
+- Leverage Cloudflare's edge computing capabilities for optimal performance
 
 ---
 
 ## Tech Stack
 
-### Core Framework & Runtime
+### Frontend
 
-- **React** (latest) — UI library with modern patterns (hooks, suspense, concurrent features)
-- **React Router v7** (Framework Mode) — Full-stack routing with SSR, data loading, and actions
-- **TypeScript** (latest) — Strict type safety with modern patterns
-- **Cloudflare Workers** — Edge runtime for serverless deployment
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **React** | 18+ | UI library with modern hooks and patterns |
+| **React Router** | v7 | Framework mode with SSR, data loading, actions |
+| **TypeScript** | 5+ | Strict type safety with latest patterns |
+| **TailwindCSS** | 3+ | Utility-first CSS with responsive design |
+| **DaisyUI** | Latest | UI components with customizable themes (light default) |
+| **Lucide React** | Latest | Icon library |
+| **react-i18next** | Latest | Frontend internationalization |
+| **Zod** | Latest | Runtime schema validation |
+| **Awilix** | Latest | Dependency injection container |
 
-### Package Management & Tooling
+### Backend
 
-- **PNPM** — Fast, disk-efficient package manager
-- **Biome.js** — Unified formatter and linter (replaces ESLint + Prettier)
-- **Vite** — Build tool and dev server
-- **Vitest** — Unit and integration testing framework
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Hono** | Latest | Lightweight API framework for Workers |
+| **Drizzle ORM** | Latest | Type-safe database operations |
+| **i18next** | Latest | Backend internationalization |
+| **Zod** | Latest | Request/response validation |
+| **Awilix** | Latest | Dependency injection container |
 
-### Frontend Libraries
+### Database
 
-- **TailwindCSS** (latest) — Utility-first CSS framework
-- **DaisyUI** (latest) — Component library with customizable themes (light theme as default)
-- **Lucide React** — Icon library (`lucide-react`)
-- **react-i18next** — Internationalization for React
-- **Zod** — Schema validation
-- **Awilix** — Dependency injection container
-
-### Backend (Hono on Cloudflare Workers)
-
-- **Hono** (latest) — Lightweight web framework for edge
-- **i18next** — Backend internationalization
-- **Zod** — Request/response validation
-- **Awilix** — Dependency injection container
-- **Drizzle ORM** — Type-safe database ORM
+| Technology | Purpose |
+|------------|---------|
+| **Cloudflare D1** | SQLite database for lightweight data |
+| **Cloudflare Hyperdrive** | PostgreSQL connection pooling |
+| **Drizzle ORM** | Separate schemas for D1 and Hyperdrive |
 
 ### Cloudflare Services
 
-- **D1** — SQLite database for relational data
-- **Hyperdrive** — PostgreSQL connection pooling (external DB)
-- **Durable Objects** — Stateful real-time features and queues
-- **KV** — Key-value caching and DO queue coordination
-- **R2** — Object storage for static files
-- **Vectorize** — Vector database for ML embeddings
-- **Workers AI** — AI/ML inference at the edge
+| Service | Purpose | Use Cases |
+|---------|---------|-----------|
+| **D1** | SQLite database | User data, settings, lightweight storage |
+| **Hyperdrive** | PostgreSQL pooling | Complex queries, relational data |
+| **KV** | Key-value cache | Session data, feature flags, caching |
+| **R2** | Object storage | Static files, uploads, media |
+| **Durable Objects** | Real-time, state | WebSocket, queues, coordination |
+| **Vectorize** | Vector embeddings | ML data models, similarity search |
+| **Workers AI** | AI inference | Text generation, embeddings, automation |
 
-### Database & ORM
+### Development Tools
 
-- **Drizzle ORM** — Type-safe ORM with separate schemas:
-  - `db/d1/` — D1 SQLite schemas and migrations
-  - `db/hyperdrive/` — Hyperdrive PostgreSQL schemas and migrations
-- **Docker Compose** — Local PostgreSQL for Hyperdrive development
-
-### Testing
-
-- **Vitest** — Unit and integration testing
-- **React Testing Library** — Component testing
-- **MSW** (optional) — API mocking for integration tests
+| Tool | Purpose |
+|------|---------|
+| **PNPM** | Package manager |
+| **Biome.js** | Formatting and linting |
+| **Vitest** | Unit and integration testing |
+| **React Testing Library** | Component testing |
+| **Docker Compose** | Local PostgreSQL for Hyperdrive |
+| **Wrangler** | Cloudflare CLI |
 
 ---
 
@@ -68,402 +76,366 @@ A modern full-stack web application starter built on **React Router v7 (Framewor
 
 ### Code Style
 
-#### General Rules
+#### TypeScript
+- **Strict mode enabled** — All compiler strict flags on
+- **Explicit return types** — All functions must have explicit return types
+- **Interface over type** — Prefer interfaces for object shapes, types for unions/primitives
+- **Readonly by default** — Use `readonly` for properties that shouldn't mutate
+- **No `any`** — Use `unknown` and narrow types instead
+- **Barrel exports** — Use `index.ts` for clean imports
 
-- Use **Biome.js** for all formatting and linting (no ESLint/Prettier)
-- Strict TypeScript with `strict: true` and `noUncheckedIndexedAccess: true`
-- Prefer `const` over `let`, avoid `var`
-- Use descriptive variable and function names
-- Maximum line length: 100 characters
-- Use single quotes for strings
-- Use tabs for indentation
+```typescript
+// ✅ Good
+interface UserService {
+  readonly getUser: (id: string) => Promise<User | null>;
+  readonly createUser: (data: CreateUserInput) => Promise<User>;
+}
+
+// ❌ Bad
+type UserService = {
+  getUser: (id: string) => any;
+  createUser: (data: any) => any;
+}
+```
 
 #### Naming Conventions
-
-| Type | Convention | Example |
-|------|------------|---------|
-| Components | PascalCase | `UserProfile.tsx` |
-| Hooks | camelCase with `use` prefix | `useAuth.ts` |
-| Utilities | camelCase | `formatDate.ts` |
-| Constants | SCREAMING_SNAKE_CASE | `MAX_RETRY_COUNT` |
-| Types/Interfaces | PascalCase | `UserResponse` |
-| Files (non-component) | kebab-case | `auth-service.ts` |
-| Database tables | snake_case | `user_sessions` |
-| Environment variables | SCREAMING_SNAKE_CASE | `DATABASE_URL` |
+- **Files:** `kebab-case.ts`, `kebab-case.tsx`
+- **Components:** `PascalCase`
+- **Functions/Variables:** `camelCase`
+- **Constants:** `SCREAMING_SNAKE_CASE`
+- **Interfaces:** `PascalCase` (no `I` prefix)
+- **Types:** `PascalCase`
+- **Enums:** `PascalCase` with `PascalCase` members
 
 #### File Organization
-
 ```
-app/
-├── components/           # Reusable UI components
-│   ├── __tests__/       # Component tests
-│   ├── ui/              # Base UI components (buttons, inputs, etc.)
-│   └── features/        # Feature-specific components
-├── routes/              # React Router routes
-│   └── __tests__/       # Route integration tests
-├── hooks/               # Custom React hooks
-├── containers/          # DI containers (Awilix)
-├── engines/             # Business logic / facade layer
-├── services/            # Direct integrations (API, DB, external)
-├── types/               # TypeScript type definitions
-├── utils/               # Utility functions
-├── i18n/                # Frontend translations
-│   ├── locales/
-│   │   ├── en/
-│   │   └── id/
-│   └── config.ts
-├── styles/              # Global styles
-└── root.tsx             # App root
-
-server/
-├── routes/              # Hono API routes
-│   └── v1/
-├── containers/          # DI containers (Awilix)
-├── engines/             # Business logic / facade layer
-├── services/            # Direct integrations (D1, Hyperdrive, KV, etc.)
-├── middlewares/         # Hono middlewares
-├── i18n/                # Backend translations
-├── durable_objects/     # Durable Objects classes
-└── app.ts               # Hono app entry
-
-db/
-├── d1/
-│   ├── schema/          # D1 Drizzle schemas
-│   └── migrations/      # D1 migrations
-└── hyperdrive/
-    ├── schema/          # Hyperdrive Drizzle schemas
-    └── migrations/      # Hyperdrive migrations
+feature/
+├── index.ts              # Barrel export
+├── feature.component.tsx # React component
+├── feature.engine.ts     # Business logic
+├── feature.service.ts    # External integrations
+├── feature.types.ts      # Type definitions
+├── feature.schema.ts     # Zod schemas
+└── __tests__/
+    ├── feature.component.test.tsx
+    ├── feature.engine.test.ts
+    └── feature.integration.test.ts
 ```
+
+### React Patterns
+
+#### Component Structure
+- Use **functional components** with hooks exclusively
+- Use **semantic HTML** and **ARIA roles** for accessibility
+- Implement **proper form layouts** following Tailwind UI patterns
+- Use **DaisyUI components** with custom theme (light default)
+
+```tsx
+// ✅ Good - Semantic HTML with ARIA
+export function UserCard({ user }: UserCardProps): JSX.Element {
+  return (
+    <article aria-labelledby={`user-${user.id}-name`}>
+      <header>
+        <h2 id={`user-${user.id}-name`}>{user.name}</h2>
+      </header>
+      <section aria-label="User details">
+        <p>{user.email}</p>
+      </section>
+    </article>
+  );
+}
+```
+
+#### Form Layouts
+Follow Tailwind CSS form layout patterns for responsive design:
+- Stack labels above inputs on mobile
+- Side-by-side on larger screens
+- Proper spacing and grouping
+- Clear validation feedback
+
+```tsx
+// Form layout pattern (responsive)
+<form className="space-y-6">
+  <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4">
+    <label htmlFor="email" className="block text-sm font-medium">
+      Email
+    </label>
+    <div className="mt-2 sm:col-span-2 sm:mt-0">
+      <input
+        type="email"
+        id="email"
+        className="input input-bordered w-full max-w-md"
+        aria-describedby="email-description"
+      />
+      <p id="email-description" className="mt-2 text-sm text-base-content/70">
+        We'll never share your email.
+      </p>
+    </div>
+  </div>
+</form>
+```
+
+#### Custom UI Components
+Create custom DaisyUI-based components for common patterns:
+- **Toast** — Notifications with auto-dismiss
+- **Modal** — Accessible dialog with focus trap
+- **Carousel** — Touch-friendly image slider
+- **Dropdown** — Accessible menu component
+
+#### Theme & Language Switcher
+Main layout must include:
+- **Theme selector** — Toggle between DaisyUI themes (light default)
+- **Language selector** — Switch between supported locales (en, id)
+
+```tsx
+// Main layout pattern
+export function MainLayout({ children }: LayoutProps): JSX.Element {
+  return (
+    <div data-theme="light" className="min-h-screen">
+      <header>
+        <nav aria-label="Main navigation">
+          {/* Navigation items */}
+          <div className="flex items-center gap-2">
+            <ThemeSelector />
+            <LanguageSelector />
+          </div>
+        </nav>
+      </header>
+      <main id="main-content" role="main">
+        {children}
+      </main>
+    </div>
+  );
+}
+```
+
+#### Hydration Safety
+For browser-only data (localStorage, etc.), use the mounted pattern:
+
+```tsx
+function Component(): JSX.Element {
+  const [data] = useLocalStorage('key', defaultValue);
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
+  const renderedData = isMounted ? data : defaultValue;
+  
+  return <div>{renderedData}</div>;
+}
+```
+
+---
 
 ### Architecture Patterns
 
-#### Layered Architecture (SOLID + DI)
+#### Layered Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Routes / Controllers                  │
-│              (React Router routes / Hono routes)         │
-└─────────────────────┬───────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────┐
-│                   Engine / Facade Layer                  │
-│         (Business logic, orchestrates services)          │
-│                                                          │
-│  • Coordinates multiple services                         │
-│  • Contains business rules and validation                │
-│  • Transaction boundaries                                │
-│  • Error handling and transformation                     │
-└─────────────────────┬───────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────┐
-│                     Service Layer                        │
-│           (Direct integration with externals)            │
-│                                                          │
-│  • D1Service (SQLite operations)                         │
-│  • HyperdriveService (PostgreSQL operations)             │
-│  • KVService (caching operations)                        │
-│  • R2Service (file storage)                              │
-│  • DOService (Durable Objects communication)             │
-│  • VectorService (ML embeddings)                         │
-│  • AIService (Workers AI inference)                      │
-│  • ExternalAPIService (third-party APIs)                 │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    Routes / Controllers                      │
+│              (React Router routes / Hono routes)             │
+│                                                              │
+│  • Handle HTTP requests/responses                            │
+│  • Input validation with Zod                                 │
+│  • Delegate to engines                                       │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+┌─────────────────────────▼───────────────────────────────────┐
+│                   Engine / Facade Layer                      │
+│           (Business logic and orchestration)                 │
+│                                                              │
+│  • Coordinate multiple services                              │
+│  • Business rules and validation                             │
+│  • Transaction boundaries                                    │
+│  • NO direct external calls                                  │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+┌─────────────────────────▼───────────────────────────────────┐
+│                      Service Layer                           │
+│             (Direct external integrations)                   │
+│                                                              │
+│  D1Service │ HyperdriveService │ KVService │ R2Service      │
+│  DOService │ VectorService │ AIService │ ExternalAPIService │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-#### Dependency Injection (Awilix)
+**Key Rules:**
+- **Only create engines when orchestration is needed** — Don't create unnecessary layers
+- **Services are single-responsibility** — One service per external dependency
+- **Engines orchestrate** — Combine multiple services for business operations
+- **No business logic in services** — Services are thin wrappers
 
-**Frontend Container (`app/containers/container.ts`):**
+#### Dependency Injection with Awilix
 
+Follow the [Awilix documentation](https://github.com/jeffijoe/awilix/blob/master/README.md) for proper implementation.
+
+**Container Setup:**
 ```typescript
-import { createContainer, asClass, asFunction } from 'awilix';
+// containers/container.ts
+import { createContainer, asClass, InjectionMode } from 'awilix';
 
-export const createAppContainer = () => {
-  const container = createContainer();
-  
-  container.register({
-    // Engines (facade/business logic)
-    authEngine: asClass(AuthEngine).scoped(),
-    userEngine: asClass(UserEngine).scoped(),
-    
-    // Services (direct integrations)
-    apiService: asClass(APIService).singleton(),
-    storageService: asClass(StorageService).singleton(),
+export interface CradleInterface {
+  userService: UserService;
+  userEngine: UserEngine;
+  // ... other dependencies
+}
+
+export function createAppContainer(env: Env): AwilixContainer<CradleInterface> {
+  const container = createContainer<CradleInterface>({
+    injectionMode: InjectionMode.CLASSIC,
   });
-  
-  return container;
-};
-```
 
-**Backend Container (`server/containers/container.ts`):**
-
-```typescript
-import { createContainer, asClass, asValue } from 'awilix';
-
-export const createServerContainer = (env: Env) => {
-  const container = createContainer();
-  
   container.register({
-    // Environment bindings
-    env: asValue(env),
+    // Services (external integrations)
+    userService: asClass(D1UserService).singleton(),
+    kvService: asClass(CloudflareKVService).singleton(),
     
-    // Engines (facade/business logic)
+    // Engines (business logic)
     userEngine: asClass(UserEngine).scoped(),
-    contentEngine: asClass(ContentEngine).scoped(),
-    
-    // Services (Cloudflare bindings)
-    d1Service: asClass(D1Service).scoped(),
-    hyperdriveService: asClass(HyperdriveService).scoped(),
-    kvService: asClass(KVService).scoped(),
-    r2Service: asClass(R2Service).scoped(),
-    doService: asClass(DOService).scoped(),
-    vectorService: asClass(VectorService).scoped(),
-    aiService: asClass(AIService).scoped(),
   });
-  
+
   return container;
-};
+}
 ```
 
-#### React Patterns
-
-- **Functional components only** — No class components
-- **Custom hooks for logic extraction** — Separate UI from business logic
-- **Suspense boundaries** — For async data loading
-- **Error boundaries** — For graceful error handling
-- **Hydration-safe patterns** — Use `isMounted` state for client-only data
-
+**Interface Binding:**
 ```typescript
-// Hydration-safe pattern for client-only data
-const [isMounted, setIsMounted] = useState(false);
-useEffect(() => setIsMounted(true), []);
-const displayData = isMounted ? clientData : defaultData;
+// Always define interfaces for DI binding
+interface UserService {
+  readonly findById: (id: string) => Promise<User | null>;
+  readonly create: (data: CreateUserInput) => Promise<User>;
+}
+
+// Implementation
+class D1UserService implements UserService {
+  constructor(private readonly db: DrizzleD1Database) {}
+  
+  async findById(id: string): Promise<User | null> {
+    // Direct D1 query
+  }
+  
+  async create(data: CreateUserInput): Promise<User> {
+    // Direct D1 insert
+  }
+}
 ```
 
-#### Hono API Patterns
-
-- **Route grouping** — Organize by resource/domain
-- **Middleware composition** — Auth, validation, i18n
-- **Zod validation** — All request/response schemas
-- **Typed context** — Full type safety with `Env` types
-
+**Engine Pattern:**
 ```typescript
-// Example Hono route with DI
-app.get('/api/v1/users/:id', async (c) => {
-  const container = c.get('container');
-  const userEngine = container.resolve<UserEngine>('userEngine');
-  
-  const id = c.req.param('id');
-  const result = await userEngine.getUserById(id);
-  
-  return c.json(result);
-});
-```
-
-### UI & Accessibility
-
-#### Semantic HTML & ARIA
-
-- Use semantic elements: `<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, `<aside>`, `<footer>`
-- Add ARIA labels for interactive elements
-- Ensure keyboard navigation support
-- Maintain focus management for modals/dialogs
-- Use `role` attributes where semantic elements aren't available
-
-```tsx
-// Example accessible component
-<button
-  type="button"
-  aria-label="Close dialog"
-  aria-pressed={isPressed}
-  onClick={handleClose}
->
-  <X className="h-5 w-5" aria-hidden="true" />
-</button>
-```
-
-#### TailwindCSS Conventions
-
-- Use responsive prefixes: `sm:`, `md:`, `lg:`, `xl:`, `2xl:`
-- Mobile-first approach
-- Follow Tailwind form layouts: [Form Layouts](https://tailwindcss.com/plus/ui-blocks/application-ui/forms/form-layouts)
-- Use DaisyUI components with theme customization
-
-#### DaisyUI Configuration
-
-DaisyUI v5 uses CSS-based configuration with `@plugin` syntax:
-
-```css
-/* app/app.css */
-@import "tailwindcss";
-
-/* Enable built-in themes: light (default), dark (prefers-color-scheme) */
-@plugin "daisyui" {
-  themes: light --default, dark --prefersdark;
+interface UserEngine {
+  readonly registerUser: (input: RegisterInput) => Promise<RegisterResult>;
 }
 
-/* Customize the light theme */
-@plugin "daisyui/theme" {
-  name: "light";
-  default: true;
-  color-scheme: light;
-  --color-primary: oklch(58.5% 0.233 255);      /* blue-500 */
-  --color-primary-content: oklch(98% 0.01 255);
-  --color-secondary: oklch(58.5% 0.233 277);    /* indigo-500 */
-  --color-secondary-content: oklch(98% 0.01 277);
-  --color-accent: oklch(76.9% 0.188 70.08);     /* amber-500 */
-  --color-accent-content: oklch(20% 0.05 70);
-  --radius-selector: 0.5rem;
-  --radius-field: 0.375rem;
-  --radius-box: 0.5rem;
-}
+class UserEngineImpl implements UserEngine {
+  constructor(
+    private readonly userService: UserService,
+    private readonly kvService: KVService,
+    private readonly emailService: EmailService,
+  ) {}
 
-/* Customize the dark theme */
-@plugin "daisyui/theme" {
-  name: "dark";
-  prefersdark: true;
-  color-scheme: dark;
-  --color-primary: oklch(65% 0.233 255);
-  --color-primary-content: oklch(98% 0.01 255);
-  --color-secondary: oklch(65% 0.233 277);
-  --color-secondary-content: oklch(98% 0.01 277);
-  --color-accent: oklch(76.9% 0.188 70.08);
-  --color-accent-content: oklch(20% 0.05 70);
+  async registerUser(input: RegisterInput): Promise<RegisterResult> {
+    // Orchestrate multiple services
+    const user = await this.userService.create(input);
+    await this.kvService.set(`user:${user.id}`, user);
+    await this.emailService.sendWelcome(user.email);
+    return { user, success: true };
+  }
 }
 ```
 
-**Theme Switching:**
-- Use `data-theme` attribute on `<html>` element
-- Persist theme preference to localStorage
-- Use [theme-change](https://github.com/saadeghi/theme-change) library for easy switching
+#### SOLID Principles
 
-```html
-<!-- Set theme on HTML element -->
-<html data-theme="light">
-  <!-- Section with different theme -->
-  <div data-theme="dark">Always dark</div>
-</html>
-```
+- **S**ingle Responsibility — Each class/function has one reason to change
+- **O**pen/Closed — Open for extension, closed for modification
+- **L**iskov Substitution — Implementations are interchangeable via interfaces
+- **I**nterface Segregation — Small, focused interfaces
+- **D**ependency Inversion — Depend on abstractions, not concretions
 
-#### Custom Components (when needed)
-
-Define custom components in `app/components/ui/` for:
-- **Toast** — Notification system with queue
-- **Modal** — Accessible dialog with focus trap
-- **Carousel** — Touch-friendly image slider
-- **Other** — As requirements demand
-
-### Internationalization (i18n)
-
-#### Frontend (react-i18next)
-
-```
-app/i18n/
-├── locales/
-│   ├── en/
-│   │   ├── common.json
-│   │   ├── auth.json
-│   │   └── errors.json
-│   └── id/
-│       ├── common.json
-│       ├── auth.json
-│       └── errors.json
-└── config.ts
-```
-
-#### Backend (i18next with Hono)
-
-```
-server/i18n/
-├── locales/
-│   ├── en/
-│   │   └── messages.json
-│   └── id/
-│       └── messages.json
-└── config.ts
-```
-
-#### Theme & Language Selector
-
-Implement in main layout (`app/root.tsx`):
-- Theme toggle (light/dark) persisted to localStorage
-- Language selector with available locales
-- Use `useLocalStorage` hook with hydration-safe pattern
+---
 
 ### Testing Strategy
 
 #### Coverage Requirements
+- **Minimum 90% coverage** for statements, branches, functions, and lines
+- **All components must have tests** — Unit and integration
+- **All API endpoints must have tests** — Unit and integration
+- **All utilities must have tests** — Unit tests
 
-- **Minimum coverage: 90%** for all metrics
-- Run coverage: `pnpm test:coverage`
+#### Test Types
 
-#### Unit Testing (Vitest)
+| Type | Location | Naming | Purpose |
+|------|----------|--------|---------|
+| Unit | `__tests__/` | `*.test.ts(x)` | Isolated function/component testing |
+| Integration | `__tests__/` | `*.integration.test.ts` | Multi-layer testing |
 
-- **Components** — `app/components/__tests__/`
-- **Hooks** — `app/hooks/__tests__/`
-- **Utilities** — `app/utils/__tests__/`
-- **Engines** — `app/engines/__tests__/`, `server/engines/__tests__/`
-- **Services** — `server/services/__tests__/`
-
+#### Test Structure
 ```typescript
-// Example component test
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { Button } from '../Button';
+// Component test
+describe('UserCard', () => {
+  it('renders user name', () => {
+    render(<UserCard user={mockUser} />);
+    expect(screen.getByRole('heading')).toHaveTextContent(mockUser.name);
+  });
 
-describe('Button', () => {
-  it('should call onClick when clicked', async () => {
-    const handleClick = vi.fn();
-    render(<Button onClick={handleClick}>Click me</Button>);
-    
-    await userEvent.click(screen.getByRole('button'));
-    
-    expect(handleClick).toHaveBeenCalledOnce();
+  it('has proper accessibility attributes', () => {
+    render(<UserCard user={mockUser} />);
+    expect(screen.getByRole('article')).toHaveAttribute('aria-labelledby');
   });
 });
-```
 
-#### Integration Testing
+// Engine test
+describe('UserEngine', () => {
+  let engine: UserEngine;
+  let mockUserService: jest.Mocked<UserService>;
 
-- **API Routes** — Test full request/response cycle
-- **Route Components** — Test with data loading and actions
-- **Engine Layer** — Test with mocked services
+  beforeEach(() => {
+    mockUserService = createMockUserService();
+    engine = new UserEngineImpl(mockUserService, mockKVService, mockEmailService);
+  });
 
-```typescript
-// Example API integration test
-import { app } from '../app';
+  it('creates user and caches result', async () => {
+    const result = await engine.registerUser(mockInput);
+    expect(mockUserService.create).toHaveBeenCalledWith(mockInput);
+    expect(mockKVService.set).toHaveBeenCalled();
+  });
+});
 
-describe('GET /api/v1/users/:id', () => {
-  it('should return user data', async () => {
-    const res = await app.request('/api/v1/users/123', {
-      method: 'GET',
+// API integration test
+describe('POST /api/v1/users', () => {
+  it('creates user and returns 201', async () => {
+    const response = await app.request('/api/v1/users', {
+      method: 'POST',
+      body: JSON.stringify(validInput),
     });
-    
-    expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data).toHaveProperty('id', '123');
+    expect(response.status).toBe(201);
   });
 });
 ```
 
-#### Test File Naming
+#### Test Commands
+```bash
+pnpm test              # Run all tests
+pnpm test:watch        # Watch mode
+pnpm test:ui           # Vitest UI
+pnpm test:coverage     # Coverage report
+```
 
-- Unit tests: `*.test.ts` or `*.test.tsx`
-- Integration tests: `*.integration.test.ts`
-- Test utilities: `*.test-utils.ts`
+---
 
 ### Git Workflow
 
-#### Branch Strategy
+#### Branching Strategy
+- **main** — Production-ready code
+- **develop** — Integration branch
+- **feature/*** — New features
+- **fix/*** — Bug fixes
+- **refactor/*** — Code improvements
 
-- `main` — Production-ready code
-- `staging` — Pre-production testing
-- `feature/*` — New features
-- `fix/*` — Bug fixes
-- `chore/*` — Maintenance tasks
-
-#### Commit Conventions
-
-Use [Conventional Commits](https://www.conventionalcommits.org/):
+#### Commit Convention
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
 <type>(<scope>): <description>
@@ -473,49 +445,91 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 [optional footer]
 ```
 
-Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`
-
-Examples:
-- `feat(auth): add login with OAuth2`
-- `fix(api): handle null response from D1`
-- `chore(deps): update DaisyUI to v5`
+**Types:**
+- `feat` — New feature
+- `fix` — Bug fix
+- `docs` — Documentation
+- `style` — Formatting
+- `refactor` — Code restructuring
+- `test` — Adding tests
+- `chore` — Maintenance
 
 ---
 
 ## Domain Context
 
-### Cloudflare Services Usage Guide
+### Internationalization
 
-| Service | Use Case | Local Testing |
-|---------|----------|---------------|
-| **D1** | Primary relational data (users, content) | `wrangler d1` local DB |
-| **Hyperdrive** | Complex queries, existing PostgreSQL | Docker Compose PostgreSQL |
-| **KV** | Session cache, feature flags, DO coordination | `wrangler kv` local |
-| **R2** | User uploads, static assets | `wrangler r2` local |
-| **Durable Objects** | Real-time collaboration, job queues | `wrangler dev` with DO |
-| **Vectorize** | Semantic search, recommendations | `wrangler vectorize` local |
-| **Workers AI** | Text generation, embeddings, classification | `wrangler ai` local |
-
-### Durable Objects + KV Queue Pattern
-
-For distributed queue coordination:
+- **Supported locales:** English (en), Indonesian (id)
+- **Frontend:** react-i18next with namespace-based organization
+- **Backend:** i18next with Hono middleware
+- **Translation files:** JSON format in `i18n/locales/{locale}/`
 
 ```typescript
-// DO for queue processing
-export class QueueProcessor extends DurableObject {
-  async processItem(item: QueueItem) {
-    // Process item
-    // Signal other DOs via KV
-    await this.env.KV.put(`queue:${item.id}:status`, 'completed');
+// Frontend usage
+const { t } = useTranslation('common');
+return <h1>{t('welcome')}</h1>;
+
+// Backend usage
+app.get('/api/greeting', (c) => {
+  const t = c.get('t');
+  return c.json({ message: t('hello') });
+});
+```
+
+### Database Schema Separation
+
+- **D1 (SQLite):** `db/d1/schema/` — Lightweight, edge-optimized data
+- **Hyperdrive (PostgreSQL):** `db/hyperdrive/schema/` — Complex relational data
+
+```typescript
+// D1 schema example
+// db/d1/schema/users.ts
+export const users = sqliteTable('users', {
+  id: text('id').primaryKey(),
+  email: text('email').notNull().unique(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+});
+
+// Hyperdrive schema example
+// db/hyperdrive/schema/analytics.ts
+export const analytics = pgTable('analytics', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  event: varchar('event', { length: 255 }).notNull(),
+  data: jsonb('data'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+```
+
+### Durable Objects with KV Communication
+
+For queue coordination across Durable Objects:
+
+```typescript
+// Use KV for inter-DO communication
+class QueueDO implements DurableObject {
+  constructor(
+    private readonly state: DurableObjectState,
+    private readonly env: Env,
+  ) {}
+
+  async processQueue(): Promise<void> {
+    // Read coordination state from KV
+    const lock = await this.env.KV.get('queue:lock');
+    if (lock) return;
+
+    // Set lock
+    await this.env.KV.put('queue:lock', this.state.id.toString(), {
+      expirationTtl: 60,
+    });
+
+    // Process queue items
+    // ...
+
+    // Release lock
+    await this.env.KV.delete('queue:lock');
   }
 }
-
-// KV for cross-DO communication
-await env.KV.put('queue:notifications', JSON.stringify({
-  type: 'ITEM_PROCESSED',
-  itemId: item.id,
-  timestamp: Date.now(),
-}));
 ```
 
 ---
@@ -523,124 +537,175 @@ await env.KV.put('queue:notifications', JSON.stringify({
 ## Important Constraints
 
 ### Technical Constraints
+- **Node.js 20+ LTS** required
+- **PNPM 8+** as package manager (no npm/yarn)
+- **90%+ test coverage** enforced in CI
+- **Biome.js** for all formatting/linting (no ESLint/Prettier)
+- **Strict TypeScript** — No implicit any, strict null checks
 
-1. **Cloudflare Workers Limits**
-   - CPU time: 30s (paid) / 10ms (free)
-   - Memory: 128MB
-   - Subrequest limit: 1000/request
+### Architecture Constraints
+- **No unnecessary layers** — Only create engines when orchestrating multiple services
+- **Interface-first DI** — All container bindings use interfaces
+- **Service layer is thin** — No business logic in services
+- **Zod for all validation** — No manual validation logic
 
-2. **D1 Constraints**
-   - Max DB size: 10GB
-   - Max rows per query: 100,000
-   - SQLite syntax only
+### Cloudflare Constraints
+- **Worker size limits** — Keep bundle size optimized
+- **D1 query limits** — Batch operations when possible
+- **KV eventual consistency** — Account for propagation delays
+- **Durable Object alarms** — Use for scheduled tasks
 
-3. **Durable Objects**
-   - Single-threaded per instance
-   - 128MB memory per instance
-   - Must handle hibernation
-
-4. **Bundle Size**
-   - Workers: 10MB compressed
-   - Minimize dependencies
-
-### Business Constraints
-
-- Must support Indonesian (`id`) and English (`en`) locales
-- Light theme as default, with dark mode option
-- Mobile-responsive design (mobile-first)
-- WCAG 2.1 AA accessibility compliance
-
-### Security Constraints
-
-- No secrets in code — use environment variables
-- Validate all inputs with Zod
-- Sanitize user-generated content
-- Use HTTPS only
-- Implement CSRF protection for mutations
+### Accessibility Constraints
+- **Semantic HTML** required for all components
+- **ARIA roles** for custom interactive elements
+- **Keyboard navigation** support required
+- **Color contrast** must meet WCAG 2.1 AA
 
 ---
 
 ## External Dependencies
 
-### Cloudflare Bindings (wrangler.jsonc)
+### Cloudflare Services
 
-```jsonc
-{
-  "d1_databases": [
-    { "binding": "DB", "database_name": "app-db", "database_id": "xxx" }
-  ],
-  "hyperdrive": [
-    { "binding": "HYPERDRIVE", "id": "xxx" }
-  ],
-  "kv_namespaces": [
-    { "binding": "KV", "id": "xxx" }
-  ],
-  "r2_buckets": [
-    { "binding": "R2", "bucket_name": "app-bucket" }
-  ],
-  "durable_objects": {
-    "bindings": [
-      { "name": "COUNTER", "class_name": "Counter" }
-    ]
-  },
-  "vectorize": [
-    { "binding": "VECTOR", "index_name": "app-vectors" }
-  ],
-  "ai": { "binding": "AI" }
-}
+| Service | Binding | Configuration |
+|---------|---------|---------------|
+| D1 Database | `DB` | `wrangler.jsonc` |
+| Hyperdrive | `HYPERDRIVE` | `wrangler.jsonc` + Docker Compose |
+| KV Namespace | `KV` | `wrangler.jsonc` |
+| R2 Bucket | `R2` | `wrangler.jsonc` |
+| Durable Objects | `COUNTER`, etc. | `wrangler.jsonc` |
+| Vectorize | `VECTOR` | `wrangler.jsonc` |
+| Workers AI | `AI` | `wrangler.jsonc` |
+
+### Local Development
+
+| Service | Tool | Configuration |
+|---------|------|---------------|
+| PostgreSQL | Docker Compose | `docker-compose.yml` |
+| Cloudflare Bindings | Wrangler | `wrangler.jsonc` |
+
+### NPM Packages (Key Dependencies)
+
+**Frontend:**
+- `react`, `react-dom`, `react-router`
+- `@tanstack/react-query` (if needed)
+- `react-i18next`, `i18next`
+- `zod`
+- `awilix`
+- `lucide-react`
+- `tailwindcss`, `daisyui`
+
+**Backend:**
+- `hono`
+- `drizzle-orm`, `drizzle-kit`
+- `i18next`
+- `zod`
+- `awilix`
+
+**Testing:**
+- `vitest`
+- `@testing-library/react`
+- `@testing-library/jest-dom`
+- `msw` (for API mocking)
+
+---
+
+## Project Structure
+
 ```
-
-### Environment Variables
-
-```bash
-# .dev.vars (local development)
-DATABASE_URL=postgresql://user:pass@localhost:5432/app
-SESSION_SECRET=xxx
-```
-
-### Docker Compose (Local Hyperdrive)
-
-```yaml
-# docker-compose.yml
-services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: app
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
+├── app/                      # Frontend (React)
+│   ├── components/           # React components
+│   │   ├── __tests__/        # Component tests
+│   │   ├── ui/               # Base UI components (Toast, Modal, etc.)
+│   │   └── features/         # Feature components
+│   ├── routes/               # React Router routes
+│   ├── hooks/                # Custom React hooks
+│   ├── containers/           # DI containers (Awilix)
+│   ├── engines/              # Business logic (facade layer)
+│   ├── services/             # Frontend services
+│   ├── types/                # TypeScript types
+│   ├── schemas/              # Zod schemas
+│   ├── i18n/                 # Frontend translations
+│   │   └── locales/          # en/, id/
+│   ├── styles/               # Global styles
+│   ├── app.css               # TailwindCSS + DaisyUI config
+│   ├── root.tsx              # App root with theme/language
+│   └── entry.server.tsx      # SSR entry
+│
+├── server/                   # Backend (Hono)
+│   ├── routes/               # API routes
+│   │   └── v1/               # Versioned API
+│   ├── containers/           # DI containers (Awilix)
+│   ├── engines/              # Business logic (facade layer)
+│   ├── services/             # Cloudflare service integrations
+│   ├── middlewares/          # Hono middlewares
+│   ├── schemas/              # Zod schemas
+│   ├── i18n/                 # Backend translations
+│   ├── durable-objects/      # Durable Objects classes
+│   └── app.ts                # Hono app entry
+│
+├── db/                       # Database schemas (separated)
+│   ├── d1/                   # D1 (SQLite)
+│   │   ├── schema/           # Drizzle schemas
+│   │   └── migrations/       # D1 migrations
+│   └── hyperdrive/           # Hyperdrive (PostgreSQL)
+│       ├── schema/           # Drizzle schemas
+│       └── migrations/       # PostgreSQL migrations
+│
+├── shared/                   # Shared code (frontend + backend)
+│   ├── types/                # Shared TypeScript types
+│   ├── schemas/              # Shared Zod schemas
+│   └── utils/                # Shared utilities
+│
+├── openspec/                 # OpenSpec specifications
+│   ├── project.md            # This file
+│   ├── AGENTS.md             # AI instructions
+│   ├── specs/                # Feature specs
+│   └── changes/              # Change proposals
+│       └── archive/          # Completed changes
+│
+├── public/                   # Static assets
+├── scripts/                  # Build scripts
+├── docker-compose.yml        # Local PostgreSQL
+├── wrangler.jsonc            # Cloudflare config
+├── biome.json                # Biome config
+├── tailwind.config.js        # TailwindCSS + DaisyUI config
+├── vitest.config.ts          # Vitest config
+└── package.json              # PNPM package config
 ```
 
 ---
 
-## Scripts Reference
+## Quick Reference
 
+### Commands
 ```bash
 # Development
-pnpm dev              # Start dev server
-pnpm build            # Build for production
-pnpm preview          # Preview production build
-
-# Testing
-pnpm test             # Run all tests
-pnpm test:coverage    # Run with coverage (must be ≥90%)
-pnpm test:watch       # Watch mode
+pnpm dev                        # Start dev server
+pnpm lint                       # Run Biome linter
+pnpm format                     # Run Biome formatter
+pnpm check                      # Lint + format
+pnpm typecheck                  # TypeScript check
 
 # Database
-pnpm db:generate      # Generate Drizzle migrations
-pnpm db:migrate       # Run D1 migrations
-pnpm db:migrate:pg    # Run Hyperdrive migrations
-pnpm db:studio        # Open Drizzle Studio
+pnpm db:generate:d1             # Generate D1 migrations
+pnpm db:generate:hyperdrive     # Generate Hyperdrive migrations
+pnpm db:migrate:d1              # Apply D1 migrations
+pnpm db:migrate:hyperdrive      # Apply Hyperdrive migrations
 
-# Code Quality
-pnpm lint             # Run Biome linter
-pnpm format           # Run Biome formatter
-pnpm check            # Run both lint and format
+# Testing
+pnpm test                       # Run all tests
+pnpm test:watch                 # Watch mode
+pnpm test:coverage              # Coverage (≥90%)
+
+# Build & Deploy
+pnpm build                      # Build for production
+pnpm preview                    # Preview locally
 ```
+
+### Key Patterns
+- **DI Container:** Use Awilix with interface binding
+- **Validation:** Zod schemas for all input/output
+- **i18n:** Centralized translations with namespaces
+- **Accessibility:** Semantic HTML + ARIA roles
+- **Testing:** 90%+ coverage with integration tests
