@@ -1,20 +1,54 @@
 # React Router Cloudflare Starter
 
-A production-ready full-stack starter built on **React Router v7 (Framework Mode)** with **Cloudflare Workers**. Features SSR, comprehensive Cloudflare service integrations, and specification-driven development with OpenSpec.
+A production-ready full-stack starter built on **React Router v7 (Framework Mode)** with **Cloudflare Workers**. Features SSR, comprehensive Cloudflare service integrations, clean architecture with SOLID principles, and specification-driven development with OpenSpec.
 
 ## Key Features
 
-- **React Router v7** — Framework mode with SSR, data loading, and actions
-- **Cloudflare Workers** — Edge deployment with D1, Hyperdrive, KV, R2, Durable Objects, Workers AI, Vectorize
-- **TypeScript** — Strict type safety with modern patterns
-- **Hono** — Lightweight backend API framework
-- **TailwindCSS + DaisyUI** — Responsive, accessible UI (light theme default)
-- **Drizzle ORM** — Type-safe database with separate D1/Hyperdrive schemas
-- **Vitest + React Testing Library** — 90%+ coverage requirement
+### Frontend
+- **React 18+** — Latest modern patterns and best practices
+- **React Router v7** — Framework Mode SSR with loaders/actions
+- **TypeScript 5+** — Strict type safety with modern patterns
+- **TailwindCSS 4+** — Latest patterns for responsive, accessible design with semantic HTML and ARIA roles
+- **DaisyUI (latest)** — UI components with customizable built-in themes (default: light)
+- **Lucide React** — Comprehensive icon library
+- **react-i18next** — Frontend internationalization with centralized references
+- **React Testing Library** — Component testing with 90%+ coverage
+
+### Backend
+- **Hono (latest)** — Fast API framework with SOLID principles
+- **TypeScript 5+** — Type-safe backend with modern patterns
+- **CSRF Protection** — Secured mutations for all POST/PUT/PATCH/DELETE requests
+- **CORS Protection** — Configurable origins via `wrangler.jsonc` variables
+- **Logger Service** — Centralized logging with correlation ID and sensitive data sanitization
+- **Global Error Handling** — Automatic error catching and logging for production debugging
+
+### Architecture
+- **Clean Architecture** — Engine/Facade and Service layers with SOLID principles
+- **Dependency Injection** — Awilix with interface-based contracts (following [Awilix guide](https://github.com/jeffijoe/awilix/blob/master/README.md))
+- **Layer Discipline** — Only create engine layer when orchestration is needed
+- **Drizzle ORM** — Type-safe database with separate D1/Hyperdrive schemas/migrations
+- **Zod** — Shared runtime schema validation (frontend + backend)
+- **i18next** — Internationalization (frontend + backend, centralized)
+
+### Testing
+- **Vitest** — Unit + integration testing framework
+- **90%+ Coverage** — Minimum coverage requirement, all tests must pass
+- **Comprehensive Testing** — Component, API, utility tests with proper integration tests
+
+### DevOps
+- **PNPM** — Fast, efficient package manager
 - **Biome.js** — Fast formatting and linting
-- **Zod** — Runtime schema validation
-- **Awilix** — Dependency injection for SOLID architecture
-- **i18next** — Internationalization (English + Indonesian)
+- **Docker Compose** — Local PostgreSQL for Hyperdrive development
+- **OpenSpec** — Specification-driven development workflow
+
+### Cloudflare Services
+- **D1** — SQLite database (separate schema)
+- **Hyperdrive** — PostgreSQL connection pooling (separate schema)
+- **KV** — Key-value cache storage
+- **R2** — Object storage (optional, based on needs)
+- **Durable Objects** — Real-time features and queues with KV communication (optional)
+- **Vectorize** — Vector embeddings for ML (optional)
+- **Workers AI** — Backend automation and AI inference (optional)
 
 ---
 
@@ -159,15 +193,19 @@ cp .dev.vars.example .dev.vars
 
 ### Step 2: Configure Environment Variables
 
-Edit `.dev.vars` with your settings:
+Edit `.dev.vars` with your settings (it resolves `${...}` placeholders in `wrangler.jsonc` via `scripts/gen-wrangler.js`):
 
 ```bash
-# .dev.vars
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/app
-SESSION_SECRET=your-secret-key-here
+# .dev.vars (gitignored)
+VALUE_FROM_CLOUDFLARE="Hello from local dev!"
+KV_ID="your_kv_id_here"
+D1_DB_ID="your_d1_db_id_here"
+HYPERDRIVE_DB_ID="your_hyperdrive_db_id_here"
+VECTORIZE_INDEX_NAME="your_vectorize_index_name_here"
+RATE_LIMITER_ID="your_rate_limiter_id_here"
 
-# Cloudflare Resource IDs (for staging/production)
-# Leave empty for local development
+# Optional (recommended for CORS)
+# CORS_ALLOWED_ORIGINS="http://localhost:5173,https://your-domain.com"
 ```
 
 ### Step 3: Start Local Services
@@ -188,37 +226,26 @@ docker-compose ps
 
 ## Database Setup
 
-This project uses **Drizzle ORM** with separate schemas for D1 (SQLite) and Hyperdrive (PostgreSQL).
+This project is designed to use **Drizzle ORM** with separate schemas/migrations for:
 
-### Step 1: Generate Migrations
+- **D1** (SQLite)
+- **Hyperdrive** (PostgreSQL)
 
-```bash
-# Generate D1 (SQLite) migrations
-pnpm db:generate:d1
+### Step 1: Provision Cloudflare resources
 
-# Generate Hyperdrive (PostgreSQL) migrations
-pnpm db:generate:hyperdrive
-```
+Follow `GUIDE.md` to create D1/Hyperdrive resources and collect their IDs.
 
-### Step 2: Apply Migrations
+### Step 2: Configure bindings for local dev
 
-```bash
-# Apply D1 migrations locally
-pnpm db:migrate:d1
+Add the relevant IDs to `.dev.vars` (or CI variables) so `scripts/gen-wrangler.js` can generate `wrangler.json`.
 
-# Apply Hyperdrive migrations to local PostgreSQL
-pnpm db:migrate:hyperdrive
-```
-
-### Step 3: View Database (Optional)
+### Step 3: Start local Postgres for Hyperdrive (optional)
 
 ```bash
-# Open D1 Drizzle Studio
-pnpm db:studio:d1
-
-# Open Hyperdrive Drizzle Studio
-pnpm db:studio:hyperdrive
+docker-compose up -d
 ```
+
+The default local connection string for Hyperdrive is configured in `wrangler.jsonc` under `hyperdrive[].localConnectionString`.
 
 ---
 
@@ -378,7 +405,7 @@ npx wrangler versions deploy
 
 ## Architecture Overview
 
-This project follows a **layered architecture** with SOLID principles and dependency injection:
+This project follows a **clean architecture** with SOLID principles and dependency injection:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -393,6 +420,7 @@ This project follows a **layered architecture** with SOLID principles and depend
 │  • Coordinates multiple services                         │
 │  • Contains business rules and validation                │
 │  • Transaction boundaries                                │
+│  • Only create when orchestration is needed              │
 └─────────────────────┬───────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────┐
@@ -404,10 +432,29 @@ This project follows a **layered architecture** with SOLID principles and depend
 └─────────────────────────────────────────────────────────┘
 ```
 
-**Key Principles:**
-- **Engine Layer** — Business logic and orchestration (no direct external calls)
+### Key Principles
+
+**Layer Discipline:**
+- **Engine Layer** — Business logic orchestration (no direct external calls)
 - **Service Layer** — Direct integrations with D1, KV, R2, APIs, etc.
-- **Dependency Injection** — Awilix containers for testability and flexibility
+- **No Unnecessary Layers** — Only create engine layer when coordinating 2+ services
+
+**Dependency Injection:**
+- **Awilix** — Interface-based DI following [official guide](https://github.com/jeffijoe/awilix/blob/master/README.md)
+- **Interface Contracts** — All services must implement interfaces
+- **Testability** — Easy mocking and unit testing
+
+**Core Features:**
+- **Logger Service** — Centralized logging with correlation ID, sensitive data sanitization
+- **Global Error Handling** — Automatic error catching and logging for all API routes
+- **CSRF Protection** — Required for all mutations (POST/PUT/PATCH/DELETE)
+- **CORS Protection** — Configurable origins via `wrangler.jsonc` variables
+
+**Testing Requirements:**
+- **Minimum 90% coverage** for statements, branches, functions, lines
+- **Unit tests** — Components, services, utilities
+- **Integration tests** — API endpoints, feature flows
+- **All tests must pass** before merging
 
 ---
 
