@@ -1,31 +1,22 @@
-import { useNavigate } from "react-router";
-import { Welcome } from "../welcome/welcome";
+import { CanvasContainer } from "~/components/interactive-canvas/CanvasContainer";
 import type { Route } from "./+types/home";
 
 export function meta() {
   return [
-    { title: "New React Router App | Home" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "Interactive Canvas | React Router App" },
+    { name: "description", content: "Create and manipulate shapes on an interactive canvas." },
   ];
 }
 
 export function loader({ context }: Route.LoaderArgs) {
-  context.cloudflare.env.KV;
-  return { message: context.cloudflare.env.VALUE_FROM_CLOUDFLARE };
+  // Keeping context access pattern if needed for future, but returning empty or basic data
+  return { };
 }
 
-export default function Home({ loaderData }: Route.ComponentProps) {
-  const navigate = useNavigate();
-
+export default function Home() {
   return (
-    <Welcome message={loaderData.message}>
-      <button
-        className="mx-auto"
-        type="button"
-        onClick={() => navigate("/about")}
-      >
-        Go to About
-      </button>
-    </Welcome>
+    <div className="min-h-screen bg-gray-100 font-sans">
+       <CanvasContainer />
+    </div>
   );
 }
