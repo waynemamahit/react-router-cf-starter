@@ -65,6 +65,10 @@ export function useHistory<T>(initialState: T) {
     });
   }, []);
   
+  // Helper to update present without adding to history (for transient updates during drag)
+  // Wait, usually we want drag end to add to history, but drag updates to only update view.
+  // The consumer should handle "commit" vs "update".
+  
   const updater = useCallback((val: T | ((prev: T) => T)) => { 
         // This is a direct setter that DOES add to history.
         setState(curr => {
