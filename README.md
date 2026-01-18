@@ -5,18 +5,21 @@ A production-ready full-stack starter built on **React Router v7 (Framework Mode
 ## Key Features
 
 ### Frontend
-- **React 18+** — Latest modern patterns and best practices
-- **React Router v7** — Framework Mode SSR with loaders/actions
-- **TypeScript 5+** — Strict type safety with modern patterns
-- **TailwindCSS 4+** — Latest patterns for responsive, accessible design with semantic HTML and ARIA roles
-- **DaisyUI (latest)** — UI components with customizable built-in themes (default: light)
-- **Lucide React** — Comprehensive icon library
+- **React 19+** — Latest modern patterns and best practices with hooks
+- **React Router v7** — Framework Mode with SSR, loaders/actions
+- **TypeScript 5+** — Strict type safety, **no `any` type allowed**
+- **TailwindCSS 4+** — Utility-first CSS with mobile-first responsive design
+- **Semantic HTML & ARIA** — Accessibility and SEO best practices
+- **DaisyUI (latest)** — UI components with customizable themes (default: light)
+- **Lucide React** — Icon library (lucide-react)
 - **react-i18next** — Frontend internationalization with centralized references
 - **React Testing Library** — Component testing with 90%+ coverage
+- **Form Layouts** — Following [TailwindCSS form layouts](https://tailwindcss.com/plus/ui-blocks/application-ui/forms/form-layouts)
 
 ### Backend
 - **Hono (latest)** — Fast API framework with SOLID principles
-- **TypeScript 5+** — Type-safe backend with modern patterns
+- **TypeScript 5+** — Type-safe backend, **no `any` type allowed**
+- **i18next** — Backend internationalization with Hono integration
 - **CSRF Protection** — Secured mutations for all POST/PUT/PATCH/DELETE requests
 - **CORS Protection** — Configurable origins via `wrangler.jsonc` variables
 - **Logger Service** — Centralized logging with correlation ID and sensitive data sanitization
@@ -25,10 +28,11 @@ A production-ready full-stack starter built on **React Router v7 (Framework Mode
 ### Architecture
 - **Clean Architecture** — Engine/Facade and Service layers with SOLID principles
 - **Dependency Injection** — Awilix with interface-based contracts (following [Awilix guide](https://github.com/jeffijoe/awilix/blob/master/README.md))
-- **Layer Discipline** — Only create engine layer when orchestration is needed
+- **Layer Discipline** — Only create engine layer when orchestrating 2+ services
 - **Drizzle ORM** — Type-safe database with separate D1/Hyperdrive schemas/migrations
 - **Zod** — Shared runtime schema validation (frontend + backend)
 - **i18next** — Internationalization (frontend + backend, centralized)
+- **Theme & Language Selector** — Built into main layout with DaisyUI themes
 
 ### Testing
 - **Vitest** — Unit + integration testing framework
@@ -36,10 +40,11 @@ A production-ready full-stack starter built on **React Router v7 (Framework Mode
 - **Comprehensive Testing** — Component, API, utility tests with proper integration tests
 
 ### DevOps
-- **PNPM** — Fast, efficient package manager
+- **PNPM** — Fast, efficient package manager (required)
 - **Biome.js** — Fast formatting and linting
 - **Docker Compose** — Local PostgreSQL for Hyperdrive development
 - **OpenSpec** — Specification-driven development workflow
+- **Wrangler** — Cloudflare CLI for development and deployment
 
 ### Cloudflare Services
 - **D1** — SQLite database (separate schema)
@@ -75,8 +80,8 @@ Before starting, ensure you have the following installed:
 
 | Tool | Version | Purpose |
 |------|---------|---------|
-| **Node.js** | 20+ LTS | JavaScript runtime |
-| **PNPM** | 8+ | Package manager |
+| **Node.js** | 24+ LTS | JavaScript runtime |
+| **PNPM** | 10+ | Package manager |
 | **Docker** | Latest | Local PostgreSQL for Hyperdrive |
 | **Wrangler CLI** | Latest | Cloudflare deployments |
 | **Git** | Latest | Version control |
