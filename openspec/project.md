@@ -2,79 +2,75 @@
 
 ## Purpose
 
-A production-ready full-stack starter built on **React Router v7 (Framework Mode)** with **Cloudflare Workers**. Features SSR, comprehensive Cloudflare service integrations, clean architecture with SOLID principles, and specification-driven development with OpenSpec.
+A production-ready full-stack starter template built on **React Router v7 (Framework Mode)** with **Cloudflare Workers**. This project provides a scalable foundation for building modern web applications with SSR, comprehensive Cloudflare service integrations, clean architecture following SOLID principles, and specification-driven development with OpenSpec.
 
 **Goals:**
-- Provide a scalable, maintainable starter for modern web applications
-- Demonstrate best practices for React Router Framework Mode with Cloudflare Workers
-- Implement clean architecture with proper separation of concerns
-- Enable rapid development with type safety and comprehensive testing
+- Provide a robust, type-safe development experience
+- Enable rapid feature development with clean architecture patterns
+- Ensure high code quality through comprehensive testing (90%+ coverage)
+- Support internationalization and accessibility out of the box
+- Leverage Cloudflare's edge computing capabilities
 
 ---
 
 ## Tech Stack
 
+### Core Technologies
+
+| Category | Technology | Version | Purpose |
+|----------|------------|---------|---------|
+| **Runtime** | Node.js | 24+ LTS | JavaScript runtime |
+| **Package Manager** | PNPM | 10+ | Fast, efficient dependency management |
+| **Language** | TypeScript | 5+ | Type safety, **no `any` type allowed** |
+| **Formatting/Linting** | Biome.js | Latest | Fast, unified code quality tooling |
+
 ### Frontend
-
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **React** | 19+ (latest) | UI library with modern patterns and hooks |
-| **React Router** | v7+ | Framework Mode with SSR, loaders/actions |
-| **TypeScript** | 5+ (latest) | Strict type safety, no `any` type allowed |
-| **TailwindCSS** | 4+ (latest) | Utility-first CSS, responsive design |
-| **DaisyUI** | latest | UI components with customizable themes (default: light) |
-| **Lucide React** | latest | Icon library (lucide-react) |
-| **react-i18next** | latest | Frontend internationalization |
-| **Zod** | latest | Runtime schema validation |
-| **Awilix** | latest | Dependency injection container |
-
-### Backend
-
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **Hono** | latest | Fast API framework with SOLID principles |
-| **TypeScript** | 5+ (latest) | Type-safe backend, no `any` type allowed |
-| **Drizzle ORM** | latest | Type-safe database ORM |
-| **Zod** | latest | Request/response validation |
-| **i18next** | latest | Backend internationalization |
-| **Awilix** | latest | Dependency injection container |
-
-### Database
 
 | Technology | Purpose |
 |------------|---------|
-| **D1** | SQLite database (Cloudflare) |
-| **Hyperdrive** | PostgreSQL connection pooling (Cloudflare) |
-| **Docker Compose** | Local PostgreSQL for Hyperdrive development |
+| **React** | 19+ with latest modern patterns and hooks |
+| **React Router v7** | Framework Mode with SSR, loaders/actions |
+| **TailwindCSS** | 4+ utility-first CSS with mobile-first responsive design |
+| **DaisyUI** | Latest version, UI components with customizable themes (default: **light**) |
+| **Lucide React** | `lucide-react` for UI icons |
+| **react-i18next** | Frontend internationalization |
+| **React Testing Library** | Component testing |
+
+### Backend
+
+| Technology | Purpose |
+|------------|---------|
+| **Hono** | Latest version, fast API framework with SOLID principles |
+| **i18next** | Backend internationalization with Hono integration |
+| **Drizzle ORM** | Type-safe database with migrations |
+| **Zod** | Runtime schema validation (shared frontend + backend) |
+| **Awilix** | Dependency injection container |
 
 ### Testing
 
 | Technology | Purpose |
 |------------|---------|
 | **Vitest** | Unit and integration testing framework |
-| **React Testing Library** | Component testing |
-| **Coverage** | Minimum 90% required, all tests must pass |
-
-### DevOps & Tooling
-
-| Technology | Purpose |
-|------------|---------|
-| **PNPM** | Package manager |
-| **Biome.js** | Formatting and linting |
-| **Wrangler** | Cloudflare CLI for development and deployment |
-| **Docker Compose** | Local PostgreSQL for Hyperdrive |
+| **React Testing Library** | Component testing with accessibility focus |
 
 ### Cloudflare Services
 
-| Service | Purpose | Required |
-|---------|---------|----------|
-| **D1** | SQLite database | Yes |
-| **Hyperdrive** | PostgreSQL connection pooling | Yes |
-| **KV** | Key-value caching | Yes |
-| **R2** | Object storage for static files | Based on needs |
-| **Durable Objects** | Real-time features and queues (with KV communication) | Based on needs |
-| **Vectorize** | Vector embeddings for ML data models | Based on needs |
-| **Workers AI** | Backend automation and AI inference | Based on needs |
+| Service | Purpose | Usage |
+|---------|---------|-------|
+| **D1** | SQLite database | Primary data storage (separate schema) |
+| **Hyperdrive** | PostgreSQL connection pooling | External DB connections (separate schema) |
+| **KV** | Key-value storage | Caching, session data, DO queue communication |
+| **R2** | Object storage | Static files, uploads |
+| **Durable Objects** | Real-time features | WebSocket connections, queues (with KV for inter-DO communication) |
+| **Vectorize** | Vector embeddings | ML data models |
+| **Workers AI** | AI inference | Backend automation |
+
+### Infrastructure
+
+| Technology | Purpose |
+|------------|---------|
+| **Docker Compose** | Local PostgreSQL for Hyperdrive development |
+| **Wrangler** | Cloudflare CLI for development and deployment |
 
 ---
 
@@ -82,366 +78,575 @@ A production-ready full-stack starter built on **React Router v7 (Framework Mode
 
 ### Code Style
 
-**General Rules:**
-- **No `any` type** — All types must be explicitly defined
-- **Strict TypeScript** — Enable all strict compiler options
-- **Biome.js** — Use for formatting and linting
-- **Semantic HTML** — Use proper HTML5 elements with ARIA roles for accessibility and SEO
-- **File naming** — Use kebab-case for files, PascalCase for components/classes
+#### TypeScript Standards
+- **Strict mode enabled** - No implicit any, strict null checks
+- **No `any` type** - Use proper types, `unknown`, or generics
+- **Explicit return types** - All functions must have explicit return types
+- **Interface-first design** - Define interfaces before implementations
+- **Proper type organization** - Centralize types in dedicated directories
 
-**TypeScript Best Practices:**
-- Define all types, interfaces, enums, and classes in dedicated `types/` directories
-- Use interface for object shapes, type for unions/intersections
-- Export types from barrel files (`index.ts`)
-- Use `satisfies` operator for type narrowing when appropriate
-- Prefer `unknown` over `any` for truly unknown types
-- Use generics for reusable type patterns
+```typescript
+// ✅ CORRECT: Explicit types, interface-based
+interface UserService {
+  findById(id: string): Promise<User | null>;
+  create(data: CreateUserInput): Promise<User>;
+}
 
-**React Best Practices:**
-- Use functional components with hooks
-- Prefer named exports for components
-- Use `React.FC` or explicit return types
-- Implement proper error boundaries
-- Use `useMemo` and `useCallback` for optimization when needed
-- Follow React Router v7 patterns for loaders/actions
+// ❌ WRONG: any type, implicit returns
+function getUser(id: any) {
+  return db.query(id);
+}
+```
 
-**TailwindCSS Best Practices:**
-- Use utility classes directly in JSX
-- Implement responsive design with mobile-first approach
-- Follow [TailwindCSS form layouts](https://tailwindcss.com/plus/ui-blocks/application-ui/forms/form-layouts) for forms
-- Use DaisyUI components with customized light theme as default
-- Create custom components (Toast, Modal, Carousel, etc.) based on requirements
+#### Type Organization
+```
+app/types/           # Frontend-specific types
+server/types/        # Backend-specific types
+shared/types/        # Shared types (frontend + backend)
+```
 
-**Accessibility Requirements:**
-- Use semantic HTML elements (`<nav>`, `<main>`, `<article>`, `<section>`, etc.)
-- Implement ARIA roles and attributes where needed
-- Ensure keyboard navigation support
-- Maintain proper heading hierarchy
-- Provide alt text for images
+- **Interfaces** - For object shapes and contracts
+- **Types** - For unions, intersections, and aliases
+- **Enums** - Use `const` enums or string literal unions
+- **Classes** - Only when behavior encapsulation is needed
+
+#### Naming Conventions
+- **Files**: `kebab-case.ts`, `kebab-case.tsx`
+- **Components**: `PascalCase`
+- **Functions/Variables**: `camelCase`
+- **Constants**: `SCREAMING_SNAKE_CASE`
+- **Interfaces**: `PascalCase` with `I` prefix optional (prefer without)
+- **Types**: `PascalCase`
+- **Enums**: `PascalCase` with `PascalCase` members
+
+#### Import Order
+1. Node.js built-ins
+2. External packages
+3. Internal aliases (`@/`, `~/`)
+4. Relative imports
+5. Type imports (separate section)
+
+### Formatting Rules (Biome.js)
+- **Indent**: 2 spaces
+- **Line width**: 100 characters
+- **Quotes**: Double quotes for strings
+- **Semicolons**: Always
+- **Trailing commas**: ES5
+
+---
 
 ### Architecture Patterns
 
-**Clean Architecture with SOLID Principles:**
+#### Clean Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                   Routes / Controllers                       │
+│                    Routes / Controllers                      │
 │              (React Router routes / Hono routes)             │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────────┐
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+┌──────────────────────────▼──────────────────────────────────┐
 │                   Engine / Facade Layer                      │
 │         (Business logic, orchestrates services)              │
 │                                                              │
-│  • Coordinates multiple services                             │
-│  • Contains business rules and validation                    │
-│  • Transaction boundaries                                    │
-│  • Only create when orchestration is needed                  │
-│  • Can be shared between frontend and backend if possible    │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────────┐
+│   • Coordinates multiple services                            │
+│   • Contains business rules and validation                   │
+│   • Transaction boundaries                                   │
+│   • ONLY create when orchestrating 2+ services               │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+┌──────────────────────────▼──────────────────────────────────┐
 │                      Service Layer                           │
 │           (Direct integration with externals)                │
 │                                                              │
-│  Backend: D1 │ Hyperdrive │ KV │ R2 │ DO │ Vector │ AI      │
-│  Frontend: API │ OAuth │ Payment │ Maps │ Third-party libs   │
+│   Backend: D1Service │ HyperdriveService │ KVService │       │
+│            R2Service │ DOService │ VectorService │ AIService │
+│                                                              │
+│   Frontend: APIService │ OAuthService │ PaymentService │     │
+│             MapService │ SmartContractService                │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Layer Discipline:**
-- **Engine/Facade Layer** — Business logic orchestration, coordinates 2+ services
-- **Service Layer** — Direct integrations with external services only
-- **No Unnecessary Layers** — Only create engine layer when truly needed
-- **Interface-based Contracts** — All services must implement interfaces for DI
+#### Layer Discipline Rules
 
-**Dependency Injection (Awilix):**
-- Follow [Awilix official guide](https://github.com/jeffijoe/awilix/blob/master/README.md)
-- Use interface-based bindings in container
-- Register services as singletons or scoped as appropriate
-- Enable easy mocking for testing
+**Engine/Facade Layer:**
+- Contains business logic and orchestration
+- Coordinates multiple services
+- Handles transaction boundaries
+- **ONLY create when needed** - Do not create unnecessary engine layers
+- Can be shared between frontend and backend if logic is portable
 
-**Validation (Zod):**
-- Define schemas in `schemas/` directories
-- Share schemas between frontend and backend in `shared/schemas/`
-- Use for request validation, form validation, and response typing
+**Service Layer:**
+- Direct integration with external services
+- No business logic - pure data access/manipulation
+- Backend services: D1, Hyperdrive, KV, R2, Durable Objects, Vectorize, Workers AI
+- Frontend services: API calls, OAuth, Payment Gateways, Maps, Smart Contracts, third-party libraries
 
-**Internationalization (i18next):**
-- Centralized translation references
-- Frontend: react-i18next
-- Backend: i18next with Hono
-- Support theme and language selector in main layout
+**Creation Rules:**
+```
+✅ Create Engine: When orchestrating 2+ services with business logic
+✅ Create Service: For each external integration point
+❌ Don't Create: Unnecessary abstraction layers
+❌ Don't Create: Engine that just proxies a single service
+```
 
-### Security Requirements
+#### Dependency Injection (Awilix)
 
-**CSRF Protection:**
-- Implement for all mutation requests (POST, PUT, PATCH, DELETE)
-- Validate CSRF tokens in Hono middleware
-- Ensure CSRF protection works properly in both development and production
+Follow the [official Awilix guide](https://github.com/jeffijoe/awilix/blob/master/README.md) for implementation.
 
-**CORS Protection:**
-- Configure allowed origins via `wrangler.jsonc` variables
-- Support multiple origins (development and production)
-- Implement proper preflight handling
+**Key Principles:**
+- **Interface-based contracts** - All services MUST implement interfaces
+- **Container registration** - Use `asClass` or `asFunction` with proper lifetime
+- **Scoped containers** - Request-scoped for API handlers
+- **Testability** - Easy mocking through interface substitution
 
-**Logger Service:**
-- Centralized logging with correlation ID for request tracing
-- Sanitize sensitive data in all request payloads and response data
-- Track correlation ID across all API requests
+```typescript
+// ✅ CORRECT: Interface-based DI
+interface IUserService {
+  findById(id: string): Promise<User | null>;
+}
 
-**Global Error Handling:**
-- Automatic error catching for all API routes
-- Log errors with logger service (including correlation ID)
-- Return appropriate error responses without exposing internals
-- Enable easy debugging in production
+class UserService implements IUserService {
+  constructor(private deps: { db: IDatabase }) {}
+  
+  async findById(id: string): Promise<User | null> {
+    return this.deps.db.query(id);
+  }
+}
+
+// Container registration
+container.register({
+  userService: asClass(UserService).scoped(),
+});
+```
+
+#### SOLID Principles Application
+
+- **S**ingle Responsibility - Each service/engine has one purpose
+- **O**pen/Closed - Extend via interfaces, not modification
+- **L**iskov Substitution - Implementations are interchangeable
+- **I**nterface Segregation - Small, focused interfaces
+- **D**ependency Inversion - Depend on abstractions, not concretions
+
+---
+
+### Schema Validation (Zod)
+
+- **Shared schemas** in `shared/schemas/` for frontend + backend
+- **Specific schemas** in `app/schemas/` or `server/schemas/`
+- **Type inference** - Derive TypeScript types from Zod schemas
+
+```typescript
+// shared/schemas/user.schema.ts
+import { z } from "zod";
+
+export const UserSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  name: z.string().min(1).max(100),
+});
+
+export type User = z.infer<typeof UserSchema>;
+```
+
+---
+
+### Database Patterns (Drizzle ORM)
+
+#### Separate Schemas
+- **D1 (SQLite)**: `db/d1/schema/`
+- **Hyperdrive (PostgreSQL)**: `db/hyperdrive/schema/`
+
+#### Migration Strategy
+- **D1**: `db/d1/migrations/`
+- **Hyperdrive**: `db/hyperdrive/migrations/`
+
+```bash
+# D1 Commands
+pnpm d1:generate      # Generate D1 migrations
+pnpm d1:migrate       # Apply D1 migrations
+pnpm d1:studio        # Open D1 Drizzle Studio
+
+# Hyperdrive Commands
+pnpm db:generate      # Generate Hyperdrive migrations
+pnpm db:migrate       # Apply Hyperdrive migrations
+pnpm db:studio        # Open Hyperdrive Drizzle Studio
+```
+
+---
+
+### Security Patterns
+
+#### CSRF Protection
+- **Required for all mutations**: POST, PUT, PATCH, DELETE
+- Implement via Hono middleware
+- Token-based with double-submit cookie pattern
+- Validate on all form submissions and API mutations
+
+#### CORS Protection
+- **Configurable origins** via `wrangler.jsonc` variables
+- Use environment variables for origin lists
+- Strict origin validation in production
+
+```jsonc
+// wrangler.jsonc
+{
+  "vars": {
+    "CORS_ALLOWED_ORIGINS": "https://your-domain.com,https://api.your-domain.com"
+  }
+}
+```
+
+#### Sensitive Data Handling
+- **Never log sensitive data** - Logger service sanitizes automatically
+- **Environment variables** for secrets
+- **No hardcoded credentials** in codebase
+
+---
+
+### Logging & Error Handling
+
+#### Logger Service
+- **Correlation ID** - Track requests across services
+- **Sensitive data sanitization** - Automatic redaction of passwords, tokens, etc.
+- **Structured logging** - JSON format for production
+- **Request/Response logging** - All API calls logged with timing
+
+```typescript
+interface ILoggerService {
+  info(message: string, meta?: Record<string, unknown>): void;
+  error(message: string, error?: Error, meta?: Record<string, unknown>): void;
+  warn(message: string, meta?: Record<string, unknown>): void;
+  debug(message: string, meta?: Record<string, unknown>): void;
+  setCorrelationId(id: string): void;
+}
+```
+
+#### Global Error Handling
+- **Automatic error catching** - All API routes wrapped
+- **Error logging** - Errors logged with correlation ID and stack trace
+- **Production-safe responses** - No sensitive details exposed to clients
+- **Easy debugging** - Correlation ID for tracing issues
+
+---
+
+### Internationalization (i18n)
+
+#### Centralized References
+- **Frontend**: `react-i18next` with translations in `app/i18n/locales/`
+- **Backend**: `i18next` with Hono integration in `server/i18n/`
+- **Shared keys** where applicable
+
+#### Translation Structure
+```
+app/i18n/
+├── config.ts           # i18next configuration
+└── locales/
+    ├── en/
+    │   ├── common.json
+    │   └── errors.json
+    └── id/
+        ├── common.json
+        └── errors.json
+
+server/i18n/
+├── config.ts           # Backend i18next configuration
+└── locales/
+    ├── en.json
+    └── id.json
+```
+
+#### Theme & Language Selector
+- Built into main layout component
+- DaisyUI theme switcher (default: light theme)
+- Language selector with flag icons
+- Persisted in localStorage/cookie
+
+---
+
+### UI/UX Patterns
+
+#### Semantic HTML & Accessibility
+- **Semantic elements** - Use `<main>`, `<nav>`, `<article>`, `<section>`, etc.
+- **ARIA roles** - Proper roles for interactive elements
+- **Keyboard navigation** - All interactions keyboard-accessible
+- **Focus management** - Visible focus indicators
+- **Screen reader support** - Descriptive labels and announcements
+
+#### Form Layouts
+- Follow [TailwindCSS Form Layouts](https://tailwindcss.com/plus/ui-blocks/application-ui/forms/form-layouts)
+- Responsive design (mobile-first)
+- Proper label associations
+- Error state handling
+- Loading states
+
+#### Custom Components
+Define custom components based on requirements:
+- **Toast** - Notification system with DaisyUI styling
+- **Modal** - Accessible modal dialogs
+- **Carousel** - Image/content carousels
+- Additional components as needed per feature requirements
+
+#### DaisyUI Theming
+- **Default theme**: `light`
+- **Available themes**: All 35 DaisyUI built-in themes
+- **Theme switching**: Use [theme-change](https://github.com/saadeghi/theme-change) for localStorage persistence
+- **Theme configuration** in CSS with `@plugin "daisyui"`
+
+```css
+/* app.css - TailwindCSS 4+ with DaisyUI */
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark, cupcake, corporate;
+}
+```
+
+**Theme Flags:**
+- `--default` - Sets the default theme
+- `--prefersdark` - Applies when user prefers dark mode (`prefers-color-scheme: dark`)
+
+**Apply theme to page:**
+```html
+<html data-theme="light">
+  <!-- Content uses light theme -->
+  <div data-theme="dark">
+    <!-- This section uses dark theme -->
+  </div>
+</html>
+```
+
+**Enable all themes:**
+```css
+@plugin "daisyui" {
+  themes: all;
+}
+```
+
+---
 
 ### Testing Strategy
 
-**Coverage Requirements:**
-- **Minimum 90% coverage** for statements, branches, functions, lines
+#### Coverage Requirements
+- **Minimum coverage: 90%** for all metrics (statements, branches, functions, lines)
 - **All tests must pass** before merging
+- **No skipped tests** in production branches
 
-**Test Types:**
-- **Unit Tests** — Components, services, utilities, engines
-- **Integration Tests** — API endpoints, feature flows, database operations
-- **Component Tests** — React Testing Library for UI components
+#### Test Types
 
-**Test Organization:**
-- Place tests in `__tests__/` directories alongside source
-- Use `*.test.ts` or `*.test.tsx` for unit tests
-- Use `*.integration.test.ts` for integration tests
+**Unit Tests** (`*.test.ts`, `*.test.tsx`)
+- Components (React Testing Library)
+- Services
+- Utilities
+- Engines/Facades
+- Schema validations
 
-**Testing Best Practices:**
-- Test behavior, not implementation
-- Mock external services at the DI container level
-- Use factories for test data generation
-- Ensure comprehensive coverage for all API endpoints
+**Integration Tests** (`*.integration.test.ts`)
+- API endpoints
+- Feature flows
+- Database operations
+- Service interactions
+
+#### Test Organization
+```
+app/
+├── components/
+│   ├── Button.tsx
+│   └── __tests__/
+│       └── Button.test.tsx
+├── services/
+│   ├── api.service.ts
+│   └── __tests__/
+│       └── api.service.test.ts
+
+server/
+├── routes/
+│   └── v1/
+│       ├── users.ts
+│       └── __tests__/
+│           ├── users.test.ts
+│           └── users.integration.test.ts
+```
+
+#### Testing Commands
+```bash
+pnpm test              # Run all tests
+pnpm test:watch        # Watch mode
+pnpm test:ui           # Vitest UI
+pnpm test:coverage     # Coverage report (≥90% required)
+```
+
+---
 
 ### Git Workflow
 
-**Branching Strategy:**
-- `main` — Production-ready code
-- `develop` — Integration branch for features
-- `feature/*` — Feature branches
-- `fix/*` — Bug fix branches
-- `release/*` — Release preparation branches
+#### Branch Strategy
+- `main` - Production-ready code
+- `dev` - Integration branch
+- `feat/*` - Feature development
+- `fix/*` - Bug fixes
+- `chore/*` - Maintenance tasks
 
-**Commit Conventions:**
-- Use conventional commits: `type(scope): message`
-- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-- Keep commits atomic and focused
+#### Commit Conventions
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-**PR Requirements:**
-- All tests must pass
-- Coverage must meet 90% threshold
-- Code review required
-- Biome checks must pass
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Types:**
+- `feat` - New feature
+- `fix` - Bug fix
+- `docs` - Documentation
+- `style` - Formatting
+- `refactor` - Code restructuring
+- `test` - Adding tests
+- `chore` - Maintenance
 
 ---
 
 ## Domain Context
 
-### Main Layout Features
-- **Theme Selector** — Switch between DaisyUI built-in themes (light as default)
-- **Language Selector** — Switch between supported languages (i18next)
-- **Responsive Navigation** — Mobile-first responsive design
+### Application Domains
 
-### Custom UI Components
-Create custom components based on requirements and use cases:
-- **Toast** — Notification system
-- **Modal** — Dialog/popup system
-- **Carousel** — Image/content slider
-- Additional components as needed
+This starter template is designed to support various application types:
+- **SaaS applications** - Multi-tenant with user management
+- **E-commerce** - Product catalogs, carts, checkout
+- **Content platforms** - CMS, blogs, documentation
+- **Real-time applications** - Chat, notifications, live updates
+- **AI-powered applications** - ML inference, embeddings, automation
 
-### Form Design
-- Follow [TailwindCSS form layouts](https://tailwindcss.com/plus/ui-blocks/application-ui/forms/form-layouts)
-- Implement proper responsive design for all form sizes
-- Use Zod for form validation
-- Display validation errors accessibly
+### Cloudflare Edge Computing
+
+**Key Concepts:**
+- **Workers** - Serverless functions at the edge
+- **D1** - SQLite at the edge, low-latency reads
+- **Hyperdrive** - Connection pooling for external databases
+- **Durable Objects** - Stateful edge computing for real-time features
+- **KV** - Global key-value storage for caching
+- **R2** - S3-compatible object storage
+- **Vectorize** - Vector database for ML embeddings
+- **Workers AI** - ML inference at the edge
 
 ---
 
 ## Important Constraints
 
 ### Technical Constraints
-- **No `any` type** — TypeScript must be strictly typed
-- **90% test coverage** — All tests must pass
-- **Biome.js compliance** — All code must pass linting and formatting
-- **Accessibility** — Semantic HTML and ARIA roles required
-- **CSRF/CORS** — Security middleware must be properly configured
+
+1. **TypeScript Strictness**
+   - No `any` type usage
+   - Strict null checks enabled
+   - Explicit return types required
+
+2. **Test Coverage**
+   - Minimum 90% coverage enforced
+   - All tests must pass before merge
+
+3. **Architecture Compliance**
+   - Follow clean architecture layers
+   - No unnecessary abstraction layers
+   - Interface-based dependency injection
+
+4. **Security Requirements**
+   - CSRF protection on all mutations
+   - CORS with configurable origins
+   - Sensitive data sanitization in logs
+
+5. **Cloudflare Compatibility**
+   - All code must run on Workers runtime
+   - No Node.js-specific APIs (unless polyfilled)
+   - Edge-compatible dependencies only
 
 ### Performance Constraints
-- Optimize for Cloudflare Workers edge runtime
-- Use proper caching strategies with KV
-- Implement efficient database queries with Drizzle
 
-### Development Constraints
-- Use PNPM as package manager (not npm or yarn)
-- Local development must work with Docker Compose for PostgreSQL
-- All Cloudflare services must be testable locally
+1. **Bundle Size** - Monitor and optimize frontend bundle
+2. **Cold Start** - Optimize Worker initialization
+3. **Database Queries** - Use indexes, avoid N+1 queries
 
 ---
 
 ## External Dependencies
 
-### Cloudflare Services Configuration
+### Required External Services
 
-**Required Services:**
-- **D1** — SQLite database with separate schema in `db/d1/`
-- **Hyperdrive** — PostgreSQL with separate schema in `db/hyperdrive/`
-- **KV** — Caching layer
+| Service | Purpose | Configuration |
+|---------|---------|---------------|
+| **Cloudflare Account** | Workers, D1, KV, R2, etc. | Wrangler CLI |
+| **PostgreSQL** | Hyperdrive backend (optional) | Docker Compose for local |
 
-**Optional Services (based on requirements):**
-- **R2** — Static file storage
-- **Durable Objects** — Real-time features, queues (with KV for cross-DO communication)
-- **Vectorize** — Vector embeddings for ML data models
-- **Workers AI** — AI inference and automation
+### Key NPM Packages
 
-### Database Migrations
-- Use Drizzle ORM for all database operations
-- Maintain separate migrations for D1 and Hyperdrive
-- Follow best practices for schema design
+| Package | Purpose |
+|---------|---------|
+| `react-router` | Framework with SSR |
+| `hono` | Backend API framework |
+| `drizzle-orm` | Type-safe ORM |
+| `zod` | Schema validation |
+| `awilix` | Dependency injection |
+| `i18next` | Internationalization |
+| `tailwindcss` | Utility CSS |
+| `daisyui` | UI components |
+| `lucide-react` | Icons |
+| `vitest` | Testing framework |
+| `@testing-library/react` | Component testing |
 
-### Third-Party Libraries
-- All dependencies managed via PNPM
-- Pin versions in `package.json`
-- Update dependencies regularly for security
+### External Documentation
 
----
-
-## Project Structure
-
-```
-├── app/                      # Frontend (React)
-│   ├── components/           # React components
-│   │   ├── __tests__/        # Component tests
-│   │   ├── ui/               # Base UI (Toast, Modal, Carousel, etc.)
-│   │   └── features/         # Feature components
-│   ├── routes/               # React Router routes
-│   ├── hooks/                # Custom React hooks
-│   ├── containers/           # DI containers (Awilix)
-│   ├── engines/              # Business logic (facade layer)
-│   ├── services/             # Frontend services (API, OAuth, etc.)
-│   ├── types/                # TypeScript types/interfaces
-│   ├── schemas/              # Zod schemas
-│   ├── i18n/                 # Frontend translations
-│   │   └── locales/          # en/, id/, etc.
-│   ├── styles/               # Global styles
-│   ├── app.css               # TailwindCSS + DaisyUI config
-│   ├── root.tsx              # App root (theme/language selectors)
-│   └── entry.server.tsx      # SSR entry
-│
-├── server/                   # Backend (Hono)
-│   ├── routes/               # API routes
-│   │   └── v1/               # Versioned API
-│   ├── containers/           # DI containers (Awilix)
-│   ├── engines/              # Business logic (facade layer)
-│   ├── services/             # Cloudflare service integrations
-│   ├── middlewares/          # Hono middlewares (CSRF, CORS, Logger, Error)
-│   ├── schemas/              # Zod schemas
-│   ├── i18n/                 # Backend translations
-│   ├── durable-objects/      # Durable Objects classes
-│   └── app.ts                # Hono app entry
-│
-├── db/                       # Database schemas (separate)
-│   ├── d1/                   # D1 (SQLite)
-│   │   ├── schema/           # Drizzle schemas
-│   │   └── migrations/       # D1 migrations
-│   └── hyperdrive/           # Hyperdrive (PostgreSQL)
-│       ├── schema/           # Drizzle schemas
-│       └── migrations/       # PostgreSQL migrations
-│
-├── shared/                   # Shared code (frontend + backend)
-│   ├── types/                # Shared TypeScript types
-│   ├── schemas/              # Shared Zod schemas
-│   └── utils/                # Shared utilities
-│
-├── openspec/                 # OpenSpec specifications
-│   ├── project.md            # Project context (this file)
-│   ├── AGENTS.md             # AI assistant instructions
-│   ├── specs/                # Feature specifications
-│   └── changes/              # Change proposals
-│       └── archive/          # Completed changes
-│
-├── public/                   # Static assets
-├── scripts/                  # Build scripts
-├── .dev.vars.example         # Environment template
-├── docker-compose.yml        # Local PostgreSQL
-├── wrangler.jsonc            # Cloudflare config (CORS origins here)
-├── biome.json                # Biome config
-├── tailwind.config.js        # TailwindCSS config
-├── drizzle.config.ts         # Drizzle config
-└── vitest.config.ts          # Vitest config
-```
+- [React Router v7 Docs](https://reactrouter.com)
+- [Hono Documentation](https://hono.dev)
+- [Cloudflare Workers Docs](https://developers.cloudflare.com/workers)
+- [Drizzle ORM Docs](https://orm.drizzle.team)
+- [Awilix Guide](https://github.com/jeffijoe/awilix/blob/master/README.md)
+- [DaisyUI Components](https://daisyui.com)
+- [TailwindCSS Form Layouts](https://tailwindcss.com/plus/ui-blocks/application-ui/forms/form-layouts)
 
 ---
 
-## Core Features Implementation
+## Quick Reference
 
-### Logger Service
-```typescript
-interface ILoggerService {
-  info(message: string, meta?: Record<string, unknown>): void;
-  warn(message: string, meta?: Record<string, unknown>): void;
-  error(message: string, error?: Error, meta?: Record<string, unknown>): void;
-  setCorrelationId(id: string): void;
-  getCorrelationId(): string;
-}
-```
-- Sanitize sensitive fields: `password`, `token`, `secret`, `authorization`, `cookie`
-- Include correlation ID in all log entries
-- Support structured logging for production debugging
-
-### Global Error Handler
-```typescript
-// Hono middleware for automatic error catching
-app.onError((err, c) => {
-  const logger = container.resolve<ILoggerService>('loggerService');
-  logger.error('Unhandled error', err, { path: c.req.path, method: c.req.method });
-  return c.json({ error: 'Internal Server Error' }, 500);
-});
-```
-
-### CSRF Middleware
-- Generate and validate CSRF tokens
-- Apply to all mutation endpoints (POST, PUT, PATCH, DELETE)
-- Integrate with Hono middleware stack
-
-### CORS Middleware
-- Read allowed origins from `wrangler.jsonc` variables
-- Support multiple origins for dev and production
-- Handle preflight OPTIONS requests
-
----
-
-## Quick Reference Commands
+### Development Commands
 
 ```bash
 # Installation
-pnpm install
-docker-compose up -d
+pnpm install                    # Install dependencies
+docker-compose up -d            # Start local PostgreSQL
 
 # Development
-pnpm dev
-pnpm lint
-pnpm format
-pnpm check
-pnpm typecheck
+pnpm dev                        # Start dev server
+
+# Code Quality
+pnpm lint                       # Run Biome linter
+pnpm format                     # Run Biome formatter
+pnpm check                      # Run lint + format
+pnpm typecheck                  # TypeScript check
 
 # Database
-pnpm db:generate:d1
-pnpm db:generate:hyperdrive
-pnpm db:migrate:d1
-pnpm db:migrate:hyperdrive
+pnpm d1:generate                # Generate D1 migrations
+pnpm d1:migrate                 # Apply D1 migrations
+pnpm db:generate                # Generate Hyperdrive migrations
+pnpm db:migrate                 # Apply Hyperdrive migrations
 
 # Testing
-pnpm test
-pnpm test:watch
-pnpm test:coverage    # Must be ≥90%
+pnpm test                       # Run all tests
+pnpm test:coverage              # Coverage report (≥90%)
 
 # Build & Deploy
-pnpm build
-pnpm preview
-npx wrangler versions upload
-npx wrangler versions deploy
+pnpm build                      # Build for production
+pnpm preview                    # Preview locally
 ```
+
+### File Naming Patterns
+
+| Pattern | Example |
+|---------|---------|
+| Component | `UserProfile.tsx` |
+| Service | `user.service.ts` |
+| Engine | `auth.engine.ts` |
+| Schema | `user.schema.ts` |
+| Type | `user.types.ts` |
+| Test | `*.test.ts`, `*.integration.test.ts` |
+| Route | `users.tsx` (React Router), `users.ts` (Hono) |

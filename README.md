@@ -1,6 +1,8 @@
 # React Router Cloudflare Starter
 
-A production-ready full-stack starter built on **React Router v7 (Framework Mode)** with **Cloudflare Workers**. Features SSR, comprehensive Cloudflare service integrations, clean architecture with SOLID principles, and specification-driven development with OpenSpec.
+A production-ready full-stack starter template built on **React Router v7 (Framework Mode)** with **Cloudflare Workers**. Features SSR, comprehensive Cloudflare service integrations, clean architecture following SOLID principles, and specification-driven development with OpenSpec.
+
+> **📖 Full Project Specification:** See [`openspec/project.md`](./openspec/project.md) for complete technical requirements, architecture patterns, and coding conventions.
 
 ## Key Features
 
@@ -498,12 +500,12 @@ pnpm typecheck                  # TypeScript check
 # ─────────────────────────────────────────────────────────
 # DATABASE
 # ─────────────────────────────────────────────────────────
-pnpm db:generate:d1             # Generate D1 migrations
-pnpm db:generate:hyperdrive     # Generate Hyperdrive migrations
-pnpm db:migrate:d1              # Apply D1 migrations
-pnpm db:migrate:hyperdrive      # Apply Hyperdrive migrations
-pnpm db:studio:d1               # Open D1 Drizzle Studio
-pnpm db:studio:hyperdrive       # Open Hyperdrive Drizzle Studio
+pnpm d1:generate             # Generate D1 migrations
+pnpm db:generate     # Generate Hyperdrive migrations
+pnpm d1:migrate              # Apply D1 migrations
+pnpm db:migrate      # Apply Hyperdrive migrations
+pnpm d1:studio               # Open D1 Drizzle Studio
+pnpm db:studio       # Open Hyperdrive Drizzle Studio
 
 # ─────────────────────────────────────────────────────────
 # TESTING
