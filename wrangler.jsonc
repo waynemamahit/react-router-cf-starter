@@ -6,9 +6,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "react-router-cf-starter",
   "compatibility_date": "2025-12-01",
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
+  "compatibility_flags": ["nodejs_compat"],
   "main": "./server/app.ts",
   "observability": {
     "enabled": true
@@ -106,6 +104,6 @@
         "limit": 20,
         "period": 10
       }
-    },
+    }
   ]
 }

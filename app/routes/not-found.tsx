@@ -1,6 +1,4 @@
-import type { Route } from "./+types/not-found";
-
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [
     { title: "Page Not Found" },
     { name: "description", content: "The requested page could not be found." },

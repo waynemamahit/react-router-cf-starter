@@ -1,9 +1,9 @@
-import { rateLimiter } from "hono-rate-limiter";
-import { cors } from 'hono/cors';
+import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
 import { logger } from "hono/logger";
-import { secureHeaders } from 'hono/secure-headers';
+import { secureHeaders } from "hono/secure-headers";
 import { Hono } from "hono/tiny";
+import { rateLimiter } from "hono-rate-limiter";
 import { createRequestHandler } from "react-router";
 import apiV1 from "./routes/v1";
 
@@ -30,11 +30,10 @@ app.use(
   rateLimiter<{ Bindings: Env }>({
     binding: (c) => c.env.LONG_RATE_LIMITER,
     keyGenerator: (c) => c.req.header("cf-connecting-ip") ?? "",
-  })
+  }),
 );
 app.use(logger());
-app.use('/api/*', cors())
-
+app.use("/api/*", cors());
 
 app.route("/api/v1", apiV1);
 
@@ -57,4 +56,3 @@ const handler: ExportedHandler<Env> = {
 export default handler;
 
 export { Counter } from "./durable_objects/counter.do";
-
