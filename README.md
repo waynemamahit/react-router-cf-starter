@@ -2,7 +2,7 @@
 
 A production-ready full-stack starter template built on **React Router v7 (Framework Mode)** with **Cloudflare Workers**. Features SSR, comprehensive Cloudflare service integrations, clean architecture following SOLID principles, and specification-driven development with OpenSpec.
 
-> **📖 Full Project Specification:** See [`openspec/project.md`](./openspec/project.md) for complete technical requirements, architecture patterns, and coding conventions.
+> **📖 Full Project Specification:** See [`openspec/config.yaml`](./openspec/config.yaml) for complete technical requirements, architecture patterns, and coding conventions.
 
 ## Key Features
 
@@ -152,26 +152,21 @@ Read the project context before making changes:
 
 ```bash
 # View project specifications
-cat openspec/project.md
-
-# View AI agent instructions
-cat openspec/AGENTS.md
+cat openspec/config.yaml
 ```
 
 ### Step 2: Understand the Specifications
 
 ```
 openspec/
-├── project.md      # Project context, tech stack, conventions
-├── AGENTS.md       # AI assistant instructions
+├── config.yaml     # Project configuration & context
 ├── specs/          # Feature specifications
 └── changes/        # Change proposals
     └── archive/    # Completed changes
 ```
 
 **Key files to review:**
-- `openspec/project.md` — Tech stack, architecture, coding conventions, testing strategy
-- `openspec/AGENTS.md` — Instructions for AI assistants working on this project
+- `openspec/config.yaml` — Project configuration, context, and rules
 
 ### Step 3: OpenSpec Workflow Commands
 
@@ -179,13 +174,21 @@ When developing features, use OpenSpec workflows:
 
 ```bash
 # Create a new change proposal
-# Use: /openspec-proposal in your AI assistant
+# Use: /opsx:new <change-name> in your AI assistant
 
-# Apply an approved change
-# Use: /openspec-apply in your AI assistant
+# Create all planning artifacts (fast-forward)
+# Use: /opsx:ff in your AI assistant
+# or
+# Create the next artifact (one at a time)
+# Use: /opsx:continue in your AI assistant
+
+# Apply approved tasks
+# Use: /opsx:apply in your AI assistant
+# Validate implementation matches specs (optional)
+# Use: /opsx:verify in your AI assistant
 
 # Archive a completed change
-# Use: /openspec-archive in your AI assistant
+# Use: /opsx:archive in your AI assistant
 ```
 
 ---
@@ -392,7 +395,7 @@ npx wrangler versions deploy
 │   └── utils/                # Shared utilities
 │
 ├── openspec/                 # OpenSpec specifications
-│   ├── project.md            # Project context
+│   ├── config.yaml           # Project configuration & context
 │   ├── AGENTS.md             # AI instructions
 │   ├── specs/                # Feature specs
 │   └── changes/              # Change proposals
@@ -534,7 +537,7 @@ docker-compose logs -f          # View logs
 
 ## Additional Resources
 
-- **OpenSpec Project Context:** `openspec/project.md`
+- **OpenSpec Configuration:** `openspec/config.yaml`
 - **Detailed Setup Guide:** `GUIDE.md`
 - **React Router Docs:** https://reactrouter.com
 - **Cloudflare Workers Docs:** https://developers.cloudflare.com/workers
