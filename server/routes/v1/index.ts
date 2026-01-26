@@ -1,11 +1,14 @@
 import { Hono } from "hono/tiny";
 import type { Counter } from "../../durable_objects/counter.do";
+import drawings from "./drawings";
 
 const apiV1 = new Hono<{
   Bindings: {
     DO_COUNTER: DurableObjectNamespace<Counter>;
   } & Env;
 }>();
+
+apiV1.route("/drawings", drawings);
 
 apiV1.get("/", async (c) => {
   return c.json({ message: "Data from API!" });

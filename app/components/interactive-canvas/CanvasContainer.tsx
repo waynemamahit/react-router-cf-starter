@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
+import { useDrawingPersistence } from "~/hooks/useDrawingPersistence";
 import { useHistory } from "~/hooks/useHistory";
 import { useLocalStorage } from "~/hooks/useLocalStorage";
 import type { Shape } from "~/models/canvas";
 import { exportToImage, exportToSvg } from "~/utils/export";
 import { Canvas } from "./Canvas";
+import { SaveDrawingForm } from "./SaveDrawingForm";
+import { SavedDrawingsList } from "./SavedDrawingsList";
 import { Statistics } from "./Statistics";
 import { Toolbar } from "./Toolbar";
 import { UserGuide } from "./UserGuide";
@@ -21,7 +24,25 @@ export function CanvasContainer() {
     redo, 
     canUndo, 
     canRedo 
-  } = useHistory<Shape[]>([]); // Initialize with empty to match SSR
+  } = useHistory<Shape[]>(savedShapes); // Initialize with saved
+
+  // 3. Remote Persistence
+  const {
+    drawings,
+    isLoadingList,
+    listError,
+    hasMore,
+    loadMore,
+    refreshList,
+    isSaving,
+    saveError,
+    saveDrawing: apiSaveDrawing,
+    loadError,
+    loadDrawing: apiLoadDrawing,
+    isDeleting,
+    deleteError,
+    deleteDrawing,
+  } = useDrawingPersistence();
   
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hasSynced, setHasSynced] = useState(false);
@@ -53,6 +74,19 @@ export function CanvasContainer() {
         setHistoryShapes(newShapes);
     }
   }, [setHistoryShapes, setTransientShapes]);
+
+  // Remote Persistence Handlers
+  const handleSaveDrawing = useCallback(async (name: string) => {
+    return await apiSaveDrawing(name, shapes);
+  }, [apiSaveDrawing, shapes]);
+
+  const handleLoadDrawing = useCallback(async (name: string) => {
+    const drawing = await apiLoadDrawing(name);
+    if (drawing) {
+      setHistoryShapes(drawing.shapes);
+      setSelectedId(null);
+    }
+  }, [apiLoadDrawing, setHistoryShapes]);
 
   // Actions
   const handleDelete = useCallback(() => {
@@ -110,24 +144,40 @@ export function CanvasContainer() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [undo, redo, handleDelete, selectedId]);
 
+  // Hydration fix: ensure client matches server (empty) on first render
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => { setIsMounted(true); }, []);
+  const renderedShapes = isMounted ? shapes : [];
+
   return (
-    <div className="flex flex-col min-h-screen md:h-screen max-w-6xl mx-auto p-4 gap-4">
-      <div className="flex-1 flex flex-col md:flex-row gap-4">
+    <div className="flex flex-col min-h-[100dvh] xl:h-[100dvh] max-w-7xl mx-auto p-2 sm:p-4 gap-4">
+      <div className="flex flex-col xl:flex-row gap-4 xl:h-full xl:overflow-hidden">
         {/* Main Canvas Area */}
-        <div className="flex-1 flex flex-col min-h-[500px] md:min-h-0">
-          <Toolbar 
-            canUndo={canUndo}
-            canRedo={canRedo}
-            canDelete={!!selectedId}
-            onUndo={undo}
-            onRedo={redo}
-            onDelete={handleDelete}
-            onReset={handleReset}
-            onExport={handleExport}
-          />
-          <div className="flex-1 min-h-0">
+        <div className="flex-1 flex flex-col min-h-[50vh] xl:min-h-0 gap-2 min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-gray-50 p-2 rounded-lg border border-gray-100">
+            <div>
+              <Toolbar 
+                canUndo={canUndo}
+                canRedo={canRedo}
+                canDelete={!!selectedId}
+                onUndo={undo}
+                onRedo={redo}
+                onDelete={handleDelete}
+                onReset={handleReset}
+                onExport={handleExport}
+              />
+            </div>
+            <div className="flex-grow min-w-[140px]">
+              <SaveDrawingForm 
+                onSave={handleSaveDrawing} 
+                isSaving={isSaving} 
+                error={saveError} 
+              />
+            </div>
+          </div>
+          <div className="flex-1 min-h-[350px] xl:min-h-0 relative shadow-sm rounded-lg overflow-hidden border border-gray-200 bg-white">
             <Canvas 
-                shapes={shapes}
+                shapes={renderedShapes}
                 onShapesChange={handleShapesChange}
                 selectedId={selectedId}
                 onSelect={setSelectedId}
@@ -136,8 +186,26 @@ export function CanvasContainer() {
         </div>
         
         {/* Sidebar */}
-        <div className="w-full md:w-64 flex-shrink-0 flex flex-col gap-4">
-          <Statistics shapes={shapes} />
+        <div className="w-full xl:w-72 flex-shrink-0 flex flex-col gap-4 xl:overflow-y-auto xl:min-h-0 border-t xl:border-t-0 pt-4 xl:pt-0">
+          <Statistics shapes={renderedShapes} />
+          
+          <SavedDrawingsList 
+            drawings={drawings}
+            isLoading={isLoadingList}
+            error={listError}
+            hasMore={hasMore}
+            onLoadMore={loadMore}
+            onRetry={refreshList}
+            onLoadDrawing={handleLoadDrawing}
+            onDeleteDrawing={deleteDrawing}
+            isDeleting={isDeleting}
+          />
+          {(loadError || deleteError) && (
+            <div className="p-2 text-xs text-red-500 bg-red-50 border border-red-100 rounded">
+              {loadError || deleteError}
+            </div>
+          )}
+          
           <UserGuide />
         </div>
       </div>
