@@ -4,7 +4,7 @@
  */
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "react-router-cf-starter",
+  "name": "react-router-cf-starter-staging",
   "compatibility_date": "2025-12-01",
   "compatibility_flags": ["nodejs_compat"],
   "main": "./server/app.ts",
@@ -41,7 +41,7 @@
   "d1_databases": [
     {
       "binding": "D1",
-      "database_name": "production_db",
+      "database_name": "staging_db",
       "database_id": "${D1_DB_ID}"
     }
   ],
