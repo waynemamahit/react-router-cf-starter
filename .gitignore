@@ -18,3 +18,11 @@ worker-configuration.d.ts
 
 !.dev.vars.example
 !.env.example
+
+# OpenSpec
+**/openspec-*/*.md
+**/opsx-*.md
+**/opsx-*.toml
+**/opsx-*.prompt
+**/commands/opsx/*.md
+**/commands/opsx/*.toml
