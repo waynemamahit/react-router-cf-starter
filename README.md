@@ -7,25 +7,27 @@ A production-ready full-stack starter template built on **React Router v7 (Frame
 ## Key Features
 
 ### Frontend
-- **React 19+** — Latest modern patterns and best practices with hooks
-- **React Router v7** — Framework Mode with SSR, loaders/actions
-- **TypeScript 5+** — Strict type safety, **no `any` type allowed**
+- **React 19+** — Latest modern patterns with hooks and Suspense
+- **React Router v7** — Framework Mode with SSR, loaders/actions, type-safe data flow
+- **TypeScript 5.9+** — Strict type safety, **no `any` type allowed**, `verbatimModuleSyntax`
 - **TailwindCSS 4+** — Utility-first CSS with mobile-first responsive design
-- **Semantic HTML & ARIA** — Accessibility and SEO best practices
-- **DaisyUI (latest)** — UI components with customizable themes (default: light)
-- **Lucide React** — Icon library (lucide-react)
-- **react-i18next** — Frontend internationalization with centralized references
-- **React Testing Library** — Component testing with 90%+ coverage
+- **Semantic HTML & ARIA** — Accessibility (skip links, keyboard nav, focus management) and SEO
+- **DaisyUI 5+** — UI components with customizable themes (default: **light**)
+- **Lucide React** — Icon library (`lucide-react`)
+- **react-i18next** — Frontend internationalization with centralized translation files
 - **Form Layouts** — Following [TailwindCSS form layouts](https://tailwindcss.com/plus/ui-blocks/application-ui/forms/form-layouts)
 
 ### Backend
-- **Hono (latest)** — Fast API framework with SOLID principles
-- **TypeScript 5+** — Type-safe backend, **no `any` type allowed**
+- **Hono 4+** — Fast, edge-native API framework with SOLID principles
+- **TypeScript 5.9+** — Type-safe backend, **no `any` type allowed**
 - **i18next** — Backend internationalization with Hono integration
-- **CSRF Protection** — Secured mutations for all POST/PUT/PATCH/DELETE requests
-- **CORS Protection** — Configurable origins via `wrangler.jsonc` variables
+- **CSRF Protection** — Hono `csrf()` middleware for all mutation endpoints
+- **CORS Protection** — Configurable origins via `CORS_ALLOWED_ORIGINS` in `wrangler.jsonc`
+- **Rate Limiting** — Edge-native via Cloudflare `RateLimit` bindings with `hono-rate-limiter`
+- **Secure Headers** — CSP, X-Frame-Options, etc. via `hono/secure-headers`
 - **Logger Service** — Centralized logging with correlation ID and sensitive data sanitization
 - **Global Error Handling** — Automatic error catching and logging for production debugging
+- **Zod Validation** — Request validation via `@hono/zod-validator` middleware
 
 ### Architecture
 - **Clean Architecture** — Engine/Facade and Service layers with SOLID principles
@@ -37,9 +39,11 @@ A production-ready full-stack starter template built on **React Router v7 (Frame
 - **Theme & Language Selector** — Built into main layout with DaisyUI themes
 
 ### Testing
-- **Vitest** — Unit + integration testing framework
+- **Vitest 4+** — Unit + integration testing framework
+- **React Testing Library** — Component testing with accessibility focus
+- **Playwright** — End-to-end testing across Chromium, Firefox, WebKit
 - **90%+ Coverage** — Minimum coverage requirement, all tests must pass
-- **Comprehensive Testing** — Component, API, utility tests with proper integration tests
+- **Comprehensive Testing** — Component, API, utility, integration, and E2E tests
 
 ### DevOps
 - **PNPM** — Fast, efficient package manager (required)
@@ -49,13 +53,15 @@ A production-ready full-stack starter template built on **React Router v7 (Frame
 - **Wrangler** — Cloudflare CLI for development and deployment
 
 ### Cloudflare Services
-- **D1** — SQLite database (separate schema)
-- **Hyperdrive** — PostgreSQL connection pooling (separate schema)
-- **KV** — Key-value cache storage
-- **R2** — Object storage (optional, based on needs)
-- **Durable Objects** — Real-time features and queues with KV communication (optional)
-- **Vectorize** — Vector embeddings for ML (optional)
-- **Workers AI** — Backend automation and AI inference (optional)
+- **D1** — SQLite database at the edge (separate schema in `db/d1/`)
+- **Hyperdrive** — PostgreSQL connection pooling (separate schema in `db/hyperdrive/`)
+- **KV** — Key-value cache, sessions, inter-DO communication
+- **R2** — S3-compatible object storage for uploads/files
+- **Durable Objects** — Stateful WebSocket/SSE, queues (KV for inter-DO coordination)
+- **Vectorize** — Vector embeddings for ML data models
+- **Workers AI** — AI inference and backend automation
+- **Browser Rendering** — Server-side browser automation
+- **Rate Limiter** — Edge-native request rate limiting
 
 ---
 
@@ -275,16 +281,10 @@ This starts:
 ### Code Quality Commands
 
 ```bash
-# Run Biome linter
+# Run Biome check + auto-fix (lint + format)
 pnpm lint
 
-# Run Biome formatter
-pnpm format
-
-# Run both lint and format
-pnpm check
-
-# Run TypeScript type checking
+# Run TypeScript type checking (wrangler types + react-router typegen + tsc)
 pnpm typecheck
 ```
 
@@ -295,25 +295,26 @@ pnpm typecheck
 ### Run Tests
 
 ```bash
-# Run all tests
+# Run all Vitest tests (unit + integration)
 pnpm test
 
-# Run tests in watch mode
-pnpm test:watch
-
-# Run tests with UI
+# Run tests with Vitest UI in browser
 pnpm test:ui
 
-# Run tests with coverage report
-pnpm test:coverage
+# Run tests with JSON output
+pnpm test:out
+
+# Run Playwright E2E tests
+pnpm test:e2e
 ```
 
 ### Coverage Requirements
 
-- **Minimum coverage: 90%** for all metrics
+- **Minimum coverage: 90%** for all metrics (statements, branches, functions, lines)
 - Tests are located in `__tests__/` directories alongside source files
 - Use `*.test.ts` or `*.test.tsx` for unit tests
 - Use `*.integration.test.ts` for integration tests
+- Use `e2e/*.spec.ts` for Playwright end-to-end tests
 
 ---
 
@@ -350,65 +351,78 @@ npx wrangler versions deploy
 ## Project Structure
 
 ```
-├── app/                      # Frontend (React)
-│   ├── components/           # React components
-│   │   ├── __tests__/        # Component tests
-│   │   ├── ui/               # Base UI components (Toast, Modal, etc.)
-│   │   └── features/         # Feature components
-│   ├── routes/               # React Router routes
-│   ├── hooks/                # Custom React hooks
-│   ├── containers/           # DI containers (Awilix)
-│   ├── engines/              # Business logic (facade layer)
-│   ├── services/             # Frontend services
-│   ├── types/                # TypeScript types
-│   ├── schemas/              # Zod schemas
-│   ├── i18n/                 # Frontend translations
-│   │   └── locales/          # en/, id/
-│   ├── styles/               # Global styles
-│   ├── app.css               # TailwindCSS + DaisyUI config
-│   ├── root.tsx              # App root with theme/language
-│   └── entry.server.tsx      # SSR entry
+├── app/                          # Frontend (React Router v7 Framework Mode)
+│   ├── components/               # React components (PascalCase files)
+│   │   └── __tests__/            # Component unit tests
+│   ├── containers/               # Frontend DI container (Awilix)
+│   ├── engines/                  # Frontend business logic orchestrators
+│   ├── hooks/                    # Custom React hooks
+│   ├── i18n/                     # Frontend internationalization
+│   │   ├── config.ts             # i18next configuration
+│   │   └── locales/              # Translation files (en/, id/)
+│   ├── routes/                   # React Router route modules
+│   │   └── __tests__/            # Route unit tests
+│   ├── schemas/                  # Frontend-specific Zod schemas
+│   ├── services/                 # Frontend services (API, OAuth, etc.)
+│   │   └── __tests__/            # Service unit tests
+│   ├── styles/                   # CSS styles
+│   │   └── app.css               # TailwindCSS 4+ with DaisyUI plugin
+│   ├── types/                    # Frontend-specific TypeScript types
+│   ├── utils/                    # Frontend utilities
+│   ├── app.css                   # Root CSS imports
+│   ├── root.tsx                  # App root with theme/language
+│   ├── routes.ts                 # Route definitions
+│   └── entry.server.tsx          # SSR entry point
 │
-├── server/                   # Backend (Hono)
-│   ├── routes/               # API routes
-│   │   └── v1/               # Versioned API
-│   ├── containers/           # DI containers (Awilix)
-│   ├── engines/              # Business logic (facade layer)
-│   ├── services/             # Cloudflare service integrations
-│   ├── middlewares/          # Hono middlewares
-│   ├── schemas/              # Zod schemas
-│   ├── i18n/                 # Backend translations
-│   ├── durable-objects/      # Durable Objects classes
-│   └── app.ts                # Hono app entry
+├── server/                       # Backend (Hono on Cloudflare Workers)
+│   ├── containers/               # Backend DI container (Awilix)
+│   ├── durable_objects/          # Durable Object classes
+│   ├── engines/                  # Backend business logic orchestrators
+│   ├── i18n/                     # Backend internationalization
+│   ├── middleware/               # Hono middleware (CSRF, CORS, etc.)
+│   ├── routes/                   # API route handlers
+│   │   └── v1/                   # Versioned API endpoints
+│   │       └── __tests__/        # Route tests (unit + integration)
+│   ├── schemas/                  # Backend-specific Zod schemas
+│   ├── services/                 # Backend services (D1, KV, R2, etc.)
+│   │   └── __tests__/            # Service unit tests
+│   ├── types/                    # Backend-specific TypeScript types
+│   └── app.ts                    # Hono app entry + Worker export
 │
-├── db/                       # Database schemas
-│   ├── d1/                   # D1 (SQLite)
-│   │   ├── schema/           # Drizzle schemas
-│   │   └── migrations/       # D1 migrations
-│   └── hyperdrive/           # Hyperdrive (PostgreSQL)
-│       ├── schema/           # Drizzle schemas
-│       └── migrations/       # PostgreSQL migrations
+├── db/                           # Database schemas and migrations
+│   ├── d1/                       # D1 (SQLite)
+│   │   ├── schema/               # Drizzle schema definitions
+│   │   └── migrations/           # D1 SQL migrations
+│   └── hyperdrive/               # Hyperdrive (PostgreSQL)
+│       ├── schema/               # Drizzle schema definitions
+│       └── migrations/           # PostgreSQL SQL migrations
 │
-├── shared/                   # Shared code (frontend + backend)
-│   ├── types/                # Shared TypeScript types
-│   ├── schemas/              # Shared Zod schemas
-│   └── utils/                # Shared utilities
+├── e2e/                          # Playwright end-to-end tests
+│   └── *.spec.ts                 # E2E test specifications
 │
-├── openspec/                 # OpenSpec specifications
-│   ├── config.yaml           # Project configuration & context
-│   ├── AGENTS.md             # AI instructions
-│   ├── specs/                # Feature specs
-│   └── changes/              # Change proposals
-│       └── archive/          # Completed changes
+├── shared/                       # Shared code (frontend + backend)
+│   ├── types/                    # Shared TypeScript types
+│   ├── schemas/                  # Shared Zod schemas
+│   └── utils/                    # Shared utilities
 │
-├── public/                   # Static assets
-├── scripts/                  # Build scripts
-├── .dev.vars.example         # Environment template
-├── docker-compose.yml        # Local PostgreSQL
-├── wrangler.jsonc            # Cloudflare config
-├── biome.json                # Biome config
-├── tailwind.config.js        # TailwindCSS config
-└── vitest.config.ts          # Vitest config
+├── openspec/                     # OpenSpec specification files
+│   ├── config.yaml               # Project configuration & context
+│   ├── specs/                    # Feature specifications
+│   └── changes/                  # Change proposals
+│       └── archive/              # Completed changes
+│
+├── public/                       # Static assets
+├── scripts/                      # Build and utility scripts
+├── biome.json                    # Biome.js configuration
+├── docker-compose.yml            # Local PostgreSQL for Hyperdrive
+├── package.json                  # Dependencies and scripts (PNPM)
+├── playwright.config.ts          # Playwright E2E configuration
+├── react-router.config.ts        # React Router v7 configuration
+├── tsconfig.json                 # TypeScript root config (strict)
+├── vite.config.ts                # Vite build configuration
+├── vitest.config.ts              # Vitest test configuration
+├── wrangler.jsonc                # Cloudflare Workers configuration
+└── worker-configuration.d.ts     # Auto-generated Cloudflare binding types
 ```
 
 ---
@@ -437,8 +451,9 @@ This project follows a **clean architecture** with SOLID principles and dependen
 │                    Service Layer                         │
 │         (Direct integration with externals)              │
 │                                                          │
-│  D1Service │ HyperdriveService │ KVService │ R2Service   │
-│  DOService │ VectorService │ AIService │ APIService      │
+│  Backend: D1 │ Hyperdrive │ KV │ R2 │ DO │ Vectorize    │
+│          │ AI │ Logger │ Auth                             │
+│  Frontend: API │ OAuth │ Payment │ Map │ SmartContract   │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -462,23 +477,28 @@ This project follows a **clean architecture** with SOLID principles and dependen
 
 **Testing Requirements:**
 - **Minimum 90% coverage** for statements, branches, functions, lines
-- **Unit tests** — Components, services, utilities
-- **Integration tests** — API endpoints, feature flows
+- **Unit tests** — Components, services, utilities (Vitest + React Testing Library)
+- **Integration tests** — API endpoints, feature flows (Vitest + Hono test client)
+- **End-to-end tests** — Full user flows across browsers (Playwright)
 - **All tests must pass** before merging
 
 ---
 
 ## Cloudflare Services
 
-| Service | Purpose | Binding | Local Testing |
-|---------|---------|---------|---------------|
-| **D1** | SQLite database | `DB` | `wrangler d1` |
-| **Hyperdrive** | PostgreSQL pooling | `HYPERDRIVE` | Docker Compose |
-| **KV** | Key-value cache | `KV` | `wrangler kv` |
-| **R2** | Object storage | `R2` | `wrangler r2` |
-| **Durable Objects** | Real-time, queues | `COUNTER` | `wrangler dev` |
-| **Vectorize** | Vector embeddings | `VECTOR` | `wrangler vectorize` |
-| **Workers AI** | AI inference | `AI` | `wrangler ai` |
+All bindings are defined in `wrangler.jsonc` and auto-typed in `worker-configuration.d.ts` via `wrangler types`.
+
+| Service | Purpose | Binding | Type | Local Testing |
+|---------|---------|---------|------|---------------|
+| **D1** | SQLite database | `D1` | `D1Database` | Wrangler local mode |
+| **Hyperdrive** | PostgreSQL pooling | `HYPERDRIVE` | `Hyperdrive` | Docker Compose |
+| **KV** | Key-value cache | `KV` | `KVNamespace` | Wrangler local mode |
+| **R2** | Object storage | `R2` | `R2Bucket` | Wrangler local mode |
+| **Durable Objects** | Real-time, queues | `DO_COUNTER` | `DurableObjectNamespace` | Wrangler dev |
+| **Vectorize** | Vector embeddings | `VECTORIZE` | `VectorizeIndex` | Remote mode |
+| **Workers AI** | AI inference | `AI` | `Ai` | Remote mode |
+| **Browser Rendering** | Browser automation | `BROWSER` | `Fetcher` | Remote mode |
+| **Rate Limiter** | Request throttling | `*_RATE_LIMITER` | `RateLimit` | Wrangler dev |
 
 ---
 
@@ -494,36 +514,34 @@ docker-compose up -d            # Start local PostgreSQL
 # ─────────────────────────────────────────────────────────
 # DEVELOPMENT
 # ─────────────────────────────────────────────────────────
-pnpm dev                        # Start dev server
-pnpm lint                       # Run Biome linter
-pnpm format                     # Run Biome formatter
-pnpm check                      # Run lint + format
-pnpm typecheck                  # TypeScript check
+pnpm dev                        # Start dev server (Vite + Wrangler)
+pnpm lint                       # Biome check + auto-fix
+pnpm typecheck                  # wrangler types + typegen + tsc
 
 # ─────────────────────────────────────────────────────────
 # DATABASE
 # ─────────────────────────────────────────────────────────
-pnpm d1:generate             # Generate D1 migrations
-pnpm db:generate     # Generate Hyperdrive migrations
-pnpm d1:migrate              # Apply D1 migrations
-pnpm db:migrate      # Apply Hyperdrive migrations
-pnpm d1:studio               # Open D1 Drizzle Studio
-pnpm db:studio       # Open Hyperdrive Drizzle Studio
+pnpm d1:generate                # Generate D1 migrations
+pnpm d1:migrate                 # Apply D1 migrations (local)
+pnpm d1:studio                  # Open D1 Drizzle Studio
+pnpm db:generate                # Generate Hyperdrive migrations
+pnpm db:migrate                 # Apply Hyperdrive migrations (local)
+pnpm db:studio                  # Open Hyperdrive Drizzle Studio
 
 # ─────────────────────────────────────────────────────────
 # TESTING
 # ─────────────────────────────────────────────────────────
-pnpm test                       # Run all tests
-pnpm test:watch                 # Watch mode
-pnpm test:ui                    # Vitest UI
-pnpm test:coverage              # Coverage report (≥90%)
+pnpm test                       # Run all Vitest tests
+pnpm test:ui                    # Vitest UI (browser)
+pnpm test:out                   # JSON test output
+pnpm test:e2e                   # Playwright E2E tests
 
 # ─────────────────────────────────────────────────────────
 # BUILD & DEPLOY
 # ─────────────────────────────────────────────────────────
-pnpm build                      # Build for production
-pnpm preview                    # Preview locally
-pnpm preview:remote             # Preview with remote resources
+pnpm build                      # Production build
+pnpm preview                    # Build + local Wrangler preview
+pnpm preview:remote             # Build + remote Wrangler preview
 
 # ─────────────────────────────────────────────────────────
 # LOCAL SERVICES
@@ -539,9 +557,17 @@ docker-compose logs -f          # View logs
 
 - **OpenSpec Configuration:** `openspec/config.yaml`
 - **Detailed Setup Guide:** `GUIDE.md`
-- **React Router Docs:** https://reactrouter.com
+- **React Router v7 Docs:** https://reactrouter.com
+- **Hono Documentation:** https://hono.dev
 - **Cloudflare Workers Docs:** https://developers.cloudflare.com/workers
-- **DaisyUI Themes:** https://daisyui.com/docs/themes
+- **Drizzle ORM Docs:** https://orm.drizzle.team
+- **DaisyUI Components:** https://daisyui.com
+- **TailwindCSS Form Layouts:** https://tailwindcss.com/plus/ui-blocks/application-ui/forms/form-layouts
+- **Awilix Guide:** https://github.com/jeffijoe/awilix/blob/master/README.md
+- **Playwright Docs:** https://playwright.dev
+- **Vitest Docs:** https://vitest.dev
+- **Zod Docs:** https://zod.dev
+- **Biome.js Docs:** https://biomejs.dev
 
 ---
 

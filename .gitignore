@@ -26,3 +26,11 @@ worker-configuration.d.ts
 **/opsx-*.prompt
 **/commands/opsx/*.md
 **/commands/opsx/*.toml
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
