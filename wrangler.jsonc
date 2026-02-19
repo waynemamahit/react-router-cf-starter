@@ -28,6 +28,7 @@
    * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
    */
   "vars": {
+    // "CORS_ALLOWED_ORIGINS": "*"
     "VALUE_FROM_CLOUDFLARE": "${VALUE_FROM_CLOUDFLARE}"
   },
   // For more information on KV, see https://developers.cloudflare.com/kv/
@@ -69,6 +70,14 @@
       }
     ]
   },
+  // For more information on R2, see https://developers.cloudflare.com/r2/
+  // This is work for only paid plan
+  // "r2_buckets": [
+  //   {
+  //     "binding": "R2", // <~ valid JavaScript variable name
+  //     "bucket_name": "${R2_BUCKET_NAME}"
+  //   }
+  // ],
   // For more information on Workers AI, see https://developers.cloudflare.com/workers-ai/
   "ai": {
     "binding": "AI",

@@ -27,40 +27,41 @@ context: |
   | **Runtime**           | Node.js       | 24+ LTS  | JavaScript runtime                           |
   | **Package Manager**   | PNPM          | 10+      | Fast, efficient dependency management        |
   | **Language**          | TypeScript    | 5.9+     | Type safety, **no `any` type allowed**       |
-  | **Formatting/Linting**| Biome.js      | 2.3+     | Fast, unified code quality tooling           |
+  | **Formatting/Linting**| Biome.js      | 2.4+     | Fast, unified code quality tooling           |
   | **Build Tool**        | Vite          | 7+       | Frontend build and dev server                |
 
   ### Frontend
 
   | Technology                | Version  | Purpose                                                        |
   | ------------------------- | -------- | -------------------------------------------------------------- |
-  | **React**                 | 19+      | Latest modern patterns: hooks, Suspense, Server Components     |
+  | **React**                 | 19.2+    | Latest modern patterns: hooks, Suspense, Server Components     |
   | **React Router v7**       | 7.13+    | Framework Mode with SSR, loaders/actions, type-safe data flow  |
-  | **TailwindCSS**           | 4+       | Utility-first CSS with mobile-first responsive design          |
-  | **DaisyUI**               | 5+       | UI components with customizable themes (default: **light**)    |
-  | **Lucide React**          | Latest   | `lucide-react` for UI icons                                    |
+  | **TailwindCSS**           | 4.2+     | Utility-first CSS with mobile-first responsive design          |
+  | **DaisyUI**               | 5.5+     | UI components with customizable themes (default: **light**)    |
+  | **Lucide React**          | 0.575+   | `lucide-react` for UI icons                                    |
   | **react-i18next**         | 16+      | Frontend internationalization                                  |
 
   ### Backend
 
   | Technology                | Version  | Purpose                                                        |
   | ------------------------- | -------- | -------------------------------------------------------------- |
-  | **Hono**                  | 4+       | Fast, edge-native API framework with SOLID principles          |
+  | **Hono**                  | 4.12+    | Fast, edge-native API framework with SOLID principles          |
   | **i18next**               | 25+      | Backend internationalization with Hono integration             |
   | **Drizzle ORM**           | 0.45+    | Type-safe database with migrations (separate D1 + Hyperdrive)  |
   | **Zod**                   | 4+       | Runtime schema validation (shared frontend + backend)          |
-  | **Awilix**                | 12+      | Dependency injection container                                 |
+  | **Awilix**                | 13+      | Dependency injection container                                 |
   | **hono-rate-limiter**     | 0.5+     | Rate limiting with Cloudflare RateLimit bindings               |
 
   ### Testing
 
   | Technology                  | Version  | Purpose                                                      |
   | --------------------------- | -------- | ------------------------------------------------------------ |
-  | **Vitest**                  | 4+       | Unit and integration testing framework                       |
+  | **Vitest**                  | 4.0+     | Unit and integration testing framework                       |
   | **React Testing Library**   | 16+      | Component testing with accessibility focus                   |
-  | **@testing-library/jest-dom** | 6+     | Extended DOM matchers for assertions                         |
+  | **@testing-library/jest-dom** | 6.9+   | Extended DOM matchers for assertions                         |
   | **Playwright**              | 1.58+    | End-to-end testing across browsers                           |
   | **jsdom**                   | 28+      | DOM environment for Vitest component tests                   |
+  | **@vitest/coverage-v8**     | 4.0+     | Coverage provider with 90% threshold enforcement             |
 
   ### Cloudflare Services
 
@@ -129,6 +130,8 @@ context: |
   │       └── migrations/           # Hyperdrive SQL migrations
   │
   ├── e2e/                          # Playwright end-to-end tests
+  │   ├── helpers/                  # E2E utilities (test-data.ts with prefix)
+  │   │   └── test-data.ts          # `from Playwright-E2E` prefix helper
   │   └── *.spec.ts                 # E2E test specifications
   │
   ├── server/                       # Backend (Hono on Cloudflare Workers)
@@ -283,6 +286,18 @@ context: |
   - **Import organization**: Automatic via `organizeImports: "on"`
   - **Domains**: React rules enabled (`"react": "recommended"`)
   - **CSS**: TailwindCSS directives parsing enabled
+
+  ```jsonc
+  // biome.json — CORRECT configuration (fix both includes/ignores AND schema version)
+  {
+    "$schema": "https://biomejs.dev/schemas/2.4.2/schema.json",
+    "files": {
+      "ignoreUnknown": false,
+      "ignores": ["coverage", "node_modules", "build", ".mf", ".wrangler"],
+      "includes": ["**/*.{ts,tsx,js,jsx,json,jsonc,md,mdx,html,css,yml,yaml}"]
+    }
+  }
+  ```
 
   ---
 
@@ -900,7 +915,35 @@ context: |
   - **Minimum coverage: 90%** for all metrics (statements, branches, functions, lines)
   - **All tests must pass** before merging to `main` or `dev`
   - **No skipped tests** in production branches
-  - **Coverage enforced** via Vitest v8 coverage provider
+  - **Coverage enforced** via Vitest v8 coverage provider with `thresholds` config
+
+  > **⚠️ IMPORTANT:** The current `vitest.config.ts` is missing the `thresholds` block.
+  > The coverage thresholds MUST be added to enforce the 90% minimum. Without `thresholds`,
+  > Vitest will report coverage but will NOT fail the build when coverage drops below 90%.
+
+  ```typescript
+  // vitest.config.ts — enforce 90% coverage thresholds
+  export default defineConfig({
+    plugins: [react(), tsconfigPaths()],
+    test: {
+      globals: true,
+      environment: "jsdom",
+      setupFiles: ["./vitest.setup.ts"],
+      exclude: ["node_modules/", "coverage/", "dist/", "e2e/", "vitest.setup.ts"],
+      coverage: {
+        provider: "v8",
+        reporter: ["text", "json", "html"],
+        thresholds: {
+          statements: 90,
+          branches: 90,
+          functions: 90,
+          lines: 90,
+        },
+        exclude: ["node_modules/", "coverage/", "dist/", "e2e/", "vitest.setup.ts"],
+      },
+    },
+  });
+  ```
 
   ### Test Types and Tools
 
@@ -936,8 +979,12 @@ context: |
   - **CI retries**: 2 retries on CI, 0 locally
   - **Reporter**: HTML report for visual debugging
 
+  > **⚠️ IMPORTANT:** The current `playwright.config.ts` is missing the `use.baseURL` and
+  > `webServer` block (both are commented out). These MUST be uncommented and configured
+  > for Playwright to automatically start the dev server and resolve relative URLs.
+
   ```typescript
-  // playwright.config.ts
+  // playwright.config.ts — correct configuration
   export default defineConfig({
     testDir: "./e2e",
     fullyParallel: true,
@@ -959,6 +1006,52 @@ context: |
       url: "http://localhost:5173",
       reuseExistingServer: !process.env.CI,
     },
+  });
+  ```
+
+  ### Playwright E2E Data Prefix Convention
+
+  **All data input in Playwright E2E tests MUST use the prefix `from Playwright-E2E`.**
+
+  This convention ensures that developers can easily distinguish between data created by
+  automated E2E tests and data created manually during development. This prevents false
+  confidence from manually seeded data being confused with Playwright-generated data.
+
+  **Rules:**
+
+  - Every text input, form field, and data creation action MUST prefix values with `from Playwright-E2E`
+  - This applies to: names, titles, descriptions, emails, and any user-generated content
+  - Use a helper function to standardize the prefix across all E2E tests
+  - During manual testing, developers can filter/identify E2E-created data by searching for this prefix
+
+  ```typescript
+  // e2e/helpers/test-data.ts — centralized E2E data prefix helper
+  const E2E_PREFIX = "from Playwright-E2E";
+
+  export function e2eData(value: string): string {
+    return `${E2E_PREFIX} ${value}`;
+  }
+
+  export function e2eEmail(name: string): string {
+    return `playwright-e2e-${name}@test.local`;
+  }
+
+  // ✅ CORRECT: Using e2eData helper in tests
+  // e2e/users.spec.ts
+  import { e2eData, e2eEmail } from "./helpers/test-data";
+
+  test("create a new user", async ({ page }) => {
+    await page.getByLabel("Name").fill(e2eData("John Doe"));
+    await page.getByLabel("Email").fill(e2eEmail("john-doe"));
+    await page.getByLabel("Bio").fill(e2eData("Software engineer"));
+    await page.getByRole("button", { name: "Submit" }).click();
+    // Asserts
+    await expect(page.getByText(e2eData("John Doe"))).toBeVisible();
+  });
+
+  // ❌ WRONG: Hardcoded data without prefix
+  test("create a new user", async ({ page }) => {
+    await page.getByLabel("Name").fill("John Doe"); // Missing prefix!
   });
   ```
 
@@ -1031,7 +1124,8 @@ context: |
   pnpm test --watch      # Watch mode
   pnpm test:ui           # Vitest UI in browser
   pnpm test:out          # JSON test output
-  pnpm test:e2e          # Run Playwright E2E tests
+  pnpm test:cov          # Run tests with coverage report + 90% threshold check
+  pnpm test:e2e          # Run Playwright E2E tests (data prefixed `from Playwright-E2E`)
   ```
 
   ---
@@ -1132,6 +1226,7 @@ context: |
     - All unit and integration tests must pass before merge
     - E2E tests must pass on CI before production deploy
     - No skipped tests in production branches
+    - **Playwright E2E data prefix**: All E2E test data inputs MUST use `from Playwright-E2E` prefix
 
   3. **Architecture Compliance**
     - Follow clean architecture layers (Routes → Engine → Service)
@@ -1189,41 +1284,45 @@ context: |
 
   ### Key NPM Packages (Production)
 
-  | Package                    | Version  | Purpose                        |
-  | -------------------------- | -------- | ------------------------------ |
-  | `react`                    | 19.2+    | UI framework                   |
-  | `react-dom`                | 19.2+    | React DOM renderer             |
-  | `react-router`             | 7.13+    | Framework with SSR             |
-  | `hono`                     | 4.11+    | Backend API framework          |
-  | `@hono/zod-validator`      | 0.7+     | Zod validation middleware      |
-  | `hono-rate-limiter`        | 0.5+     | Rate limiting middleware       |
-  | `drizzle-orm`              | 0.45+    | Type-safe ORM                  |
-  | `zod`                      | 4+       | Schema validation              |
-  | `awilix`                   | 12+      | Dependency injection           |
-  | `i18next`                  | 25+      | Internationalization           |
-  | `react-i18next`            | 16+      | React i18n integration         |
-  | `lucide-react`             | Latest   | Icons                          |
-  | `postgres`                 | 3+       | PostgreSQL driver (Hyperdrive) |
-  | `bcryptjs`                 | 3+       | Password hashing               |
+  | Package                    | Version   | Purpose                        |
+  | -------------------------- | --------- | ------------------------------ |
+  | `react`                    | 19.2.4    | UI framework                   |
+  | `react-dom`                | 19.2.4    | React DOM renderer             |
+  | `react-router`             | 7.13.0    | Framework with SSR             |
+  | `hono`                     | 4.12.0    | Backend API framework          |
+  | `@hono/zod-validator`      | 0.7.6     | Zod validation middleware      |
+  | `hono-rate-limiter`        | 0.5+      | Rate limiting middleware       |
+  | `drizzle-orm`              | 0.45.1    | Type-safe ORM                  |
+  | `zod`                      | 4.3.6     | Schema validation              |
+  | `awilix`                   | 13.0+     | Dependency injection (v13 API) |
+  | `i18next`                  | 25+       | Internationalization           |
+  | `react-i18next`            | 16+       | React i18n integration         |
+  | `lucide-react`             | 0.575+    | Icons                          |
+  | `postgres`                 | 3+        | PostgreSQL driver (Hyperdrive) |
+  | `bcryptjs`                 | 3+        | Password hashing               |
+  | `dotenv`                   | 17+       | Env var loading for scripts    |
 
   ### Key NPM Packages (Development)
 
-  | Package                        | Version  | Purpose                          |
-  | ------------------------------ | -------- | -------------------------------- |
-  | `typescript`                   | 5.9+     | Type checking                    |
-  | `@biomejs/biome`               | 2.3+     | Formatting + linting             |
-  | `tailwindcss`                  | 4+       | Utility CSS                      |
-  | `daisyui`                      | 5+       | UI components                    |
-  | `vite`                         | 7+       | Build tool                       |
-  | `@cloudflare/vite-plugin`      | 1.23+    | Cloudflare Workers Vite plugin   |
-  | `vitest`                       | 4+       | Testing framework                |
-  | `@vitest/coverage-v8`          | 4+       | Coverage provider                |
-  | `@testing-library/react`       | 16+      | Component testing                |
-  | `@testing-library/jest-dom`    | 6+       | DOM matchers                     |
-  | `jsdom`                        | 28+      | DOM environment for tests        |
-  | `@playwright/test`             | 1.58+    | E2E testing                      |
-  | `drizzle-kit`                  | 0.31+    | Migration generation             |
-  | `wrangler`                     | 4.63+    | Cloudflare Workers CLI           |
+  | Package                        | Version   | Purpose                          |
+  | ------------------------------ | --------- | -------------------------------- |
+  | `typescript`                   | 5.9.3     | Type checking                    |
+  | `@biomejs/biome`               | 2.4.2     | Formatting + linting             |
+  | `tailwindcss`                  | 4.2.0     | Utility CSS                      |
+  | `@tailwindcss/vite`            | 4.2.0     | TailwindCSS Vite plugin          |
+  | `daisyui`                      | 5.5.18    | UI components                    |
+  | `vite`                         | 7.3.1     | Build tool                       |
+  | `@cloudflare/vite-plugin`      | 1.25.1    | Cloudflare Workers Vite plugin   |
+  | `@cloudflare/vitest-pool-workers` | 0.12+  | Vitest workers pool for CF tests |
+  | `vitest`                       | 4.0.18    | Testing framework                |
+  | `@vitest/coverage-v8`          | 4.0.18    | Coverage provider (90% enforced) |
+  | `@testing-library/react`       | 16.3+     | Component testing                |
+  | `@testing-library/jest-dom`    | 6.9.1     | DOM matchers                     |
+  | `jsdom`                        | 28.1.0    | DOM environment for tests        |
+  | `@playwright/test`             | 1.58+     | E2E testing                      |
+  | `drizzle-kit`                  | 0.31.9    | Migration generation             |
+  | `wrangler`                     | 4.66.0    | Cloudflare Workers CLI           |
+  | `vite-tsconfig-paths`          | 6.1+      | Path alias resolution in Vite    |
 
   ### External Documentation
 
@@ -1321,6 +1420,11 @@ context: |
   DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/staging_db
   ```
 
+  > **⚠️ IMPORTANT:** The current `wrangler.jsonc` vars section is missing the
+  > `CORS_ALLOWED_ORIGINS` variable. It MUST be added to enable CORS/CSRF origin
+  > checks at runtime. Without it, `c.env.CORS_ALLOWED_ORIGINS` will be `undefined`
+  > and all origin-based security checks will fail.
+
   ```jsonc
   // wrangler.jsonc (production — committed, secrets via Wrangler CLI)
   {
@@ -1335,19 +1439,21 @@ context: |
 
   All bindings are defined in `wrangler.jsonc` and auto-typed in `worker-configuration.d.ts`:
 
-  | Binding              | Type                   | Config Key          |
-  | -------------------- | ---------------------- | ------------------- |
-  | `D1`                 | `D1Database`           | `d1_databases`      |
-  | `HYPERDRIVE`         | `Hyperdrive`           | `hyperdrive`        |
-  | `KV`                 | `KVNamespace`          | `kv_namespaces`     |
-  | `R2`                 | `R2Bucket`             | `r2_buckets`        |
-  | `DO_COUNTER`         | `DurableObjectNamespace` | `durable_objects` |
-  | `VECTORIZE`          | `VectorizeIndex`       | `vectorize`         |
-  | `AI`                 | `Ai`                   | `ai`                |
-  | `BROWSER`            | `Fetcher`              | `browser`           |
-  | `LONG_RATE_LIMITER`  | `RateLimit`            | `ratelimits`        |
-  | `SHORT_RATE_LIMITER` | `RateLimit`            | `ratelimits`        |
-  | `ASSETS`             | `Fetcher`              | `assets`            |
+  | Binding              | Type                     | Config Key          | Local Dev Status       |
+  | -------------------- | ------------------------ | ------------------- | ---------------------- |
+  | `D1`                 | `D1Database`             | `d1_databases`      | ✅ Local via Wrangler  |
+  | `HYPERDRIVE`         | `Hyperdrive`             | `hyperdrive`        | ✅ Docker PostgreSQL   |
+  | `KV`                 | `KVNamespace`            | `kv_namespaces`     | ✅ Local via Wrangler  |
+  | `R2`                 | `R2Bucket`               | `r2_buckets`        | ✅ Local via Wrangler  |
+  | `DO_COUNTER`         | `DurableObjectNamespace` | `durable_objects`   | ✅ Local sqlite_classes|
+  | `VECTORIZE`          | `VectorizeIndex`         | `vectorize`         | ⚠️ `remote: true`     |
+  | `AI`                 | `Ai`                     | `ai`                | ⚠️ `remote: true`     |
+  | `BROWSER`            | `Fetcher`                | `browser`           | ⚠️ Remote only         |
+  | `LONG_RATE_LIMITER`  | `RateLimit`              | `ratelimits`        | ✅ Local via Wrangler  |
+  | `SHORT_RATE_LIMITER` | `RateLimit`              | `ratelimits`        | ✅ Local via Wrangler  |
+  | `ASSETS`             | `Fetcher`                | `assets`            | ✅ Local via Wrangler  |
+
+  > **Note:** `VECTORIZE` and `AI` use `remote: true` — they require an active Cloudflare account even during local development (`wrangler dev`). Ensure bindings are provisioned before testing these features.
 
 # Per-artifact rules
 # These rules are injected into the AI context when working on specific artifacts.
@@ -1372,10 +1478,11 @@ rules:
   tasks:
     - "Break tasks into atomic, verifiable chunks (max 2 hours)"
     - "Include file paths and command examples"
-    - "Specify test coverage requirements (unit, integration, E2E)"
+    - "Specify test coverage requirements (unit, integration, E2E) — minimum 90% enforced"
     - "Define clear acceptance criteria"
     - "Include i18n translation key additions when UI text changes"
     - "Reference DaisyUI components and TailwindCSS patterns for UI tasks"
+    - "E2E test tasks MUST specify the `from Playwright-E2E` data prefix convention"
 
   spec:
     - "Must be the source of truth for the capability"
@@ -1384,3 +1491,5 @@ rules:
     - "Document API endpoints with Zod schema references"
     - "Include Cloudflare binding dependencies"
     - "Document accessibility requirements met"
+    - "Document CSRF and CORS behavior for all mutation endpoints"
+    - "Document E2E test data prefix convention adherence"
