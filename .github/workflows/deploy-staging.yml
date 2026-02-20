@@ -20,7 +20,7 @@ jobs:
           node-version: '24.13.0'
 
       - name: Install pnpm
-        run: npm install -g pnpm
+        run: npm install -g pnpm@latest
 
       - name: Install Dependencies
         run: pnpm install
