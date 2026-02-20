@@ -28,7 +28,6 @@ worker-configuration.d.ts
 **/commands/opsx/*.toml
 
 # Playwright
-node_modules/
 /test-results/
 /playwright-report/
 /blob-report/

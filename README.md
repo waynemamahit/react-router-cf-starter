@@ -7,50 +7,51 @@ A production-ready full-stack starter template built on **React Router v7 (Frame
 ## Key Features
 
 ### Frontend
-- **React 19+** — Latest modern patterns with hooks and Suspense
-- **React Router v7** — Framework Mode with SSR, loaders/actions, type-safe data flow
+- **React 19.2+** — Latest modern patterns with hooks and Suspense
+- **React Router v7.13+** — Framework Mode with SSR, loaders/actions, type-safe data flow
 - **TypeScript 5.9+** — Strict type safety, **no `any` type allowed**, `verbatimModuleSyntax`
-- **TailwindCSS 4+** — Utility-first CSS with mobile-first responsive design
+- **TailwindCSS 4.2+** — Utility-first CSS with mobile-first responsive design
 - **Semantic HTML & ARIA** — Accessibility (skip links, keyboard nav, focus management) and SEO
-- **DaisyUI 5+** — UI components with customizable themes (default: **light**)
-- **Lucide React** — Icon library (`lucide-react`)
-- **react-i18next** — Frontend internationalization with centralized translation files
+- **DaisyUI 5.5+** — UI components with customizable themes (default: **light**)
+- **Lucide React 0.575+** — Icon library (`lucide-react`)
+- **react-i18next 16+** — Frontend internationalization with centralized translation files
 - **Form Layouts** — Following [TailwindCSS form layouts](https://tailwindcss.com/plus/ui-blocks/application-ui/forms/form-layouts)
 
 ### Backend
-- **Hono 4+** — Fast, edge-native API framework with SOLID principles
+- **Hono 4.12+** — Fast, edge-native API framework with SOLID principles
 - **TypeScript 5.9+** — Type-safe backend, **no `any` type allowed**
-- **i18next** — Backend internationalization with Hono integration
+- **i18next 25+** — Backend internationalization with Hono integration
 - **CSRF Protection** — Hono `csrf()` middleware for all mutation endpoints
 - **CORS Protection** — Configurable origins via `CORS_ALLOWED_ORIGINS` in `wrangler.jsonc`
 - **Rate Limiting** — Edge-native via Cloudflare `RateLimit` bindings with `hono-rate-limiter`
 - **Secure Headers** — CSP, X-Frame-Options, etc. via `hono/secure-headers`
 - **Logger Service** — Centralized logging with correlation ID and sensitive data sanitization
 - **Global Error Handling** — Automatic error catching and logging for production debugging
-- **Zod Validation** — Request validation via `@hono/zod-validator` middleware
+- **Zod 4+** — Request validation via `@hono/zod-validator` middleware
 
 ### Architecture
 - **Clean Architecture** — Engine/Facade and Service layers with SOLID principles
-- **Dependency Injection** — Awilix with interface-based contracts (following [Awilix guide](https://github.com/jeffijoe/awilix/blob/master/README.md))
+- **Dependency Injection** — Awilix 13+ with interface-based contracts (following [Awilix guide](https://github.com/jeffijoe/awilix/blob/master/README.md))
 - **Layer Discipline** — Only create engine layer when orchestrating 2+ services
-- **Drizzle ORM** — Type-safe database with separate D1/Hyperdrive schemas/migrations
-- **Zod** — Shared runtime schema validation (frontend + backend)
+- **Drizzle ORM 0.45+** — Type-safe database with separate D1/Hyperdrive schemas/migrations
+- **Zod 4+** — Shared runtime schema validation (frontend + backend)
 - **i18next** — Internationalization (frontend + backend, centralized)
 - **Theme & Language Selector** — Built into main layout with DaisyUI themes
 
 ### Testing
-- **Vitest 4+** — Unit + integration testing framework
-- **React Testing Library** — Component testing with accessibility focus
-- **Playwright** — End-to-end testing across Chromium, Firefox, WebKit
-- **90%+ Coverage** — Minimum coverage requirement, all tests must pass
+- **Vitest 4.0+** — Unit + integration testing framework
+- **React Testing Library 16+** — Component testing with accessibility focus
+- **Playwright 1.58+** — End-to-end testing across Chromium, Firefox, WebKit
+- **90%+ Coverage** — Minimum coverage requirement, enforced via threshold config
+- **Playwright E2E Data Prefix** — All E2E test data input MUST use the prefix `from Playwright-E2E`
 - **Comprehensive Testing** — Component, API, utility, integration, and E2E tests
 
 ### DevOps
-- **PNPM** — Fast, efficient package manager (required)
-- **Biome.js** — Fast formatting and linting
+- **PNPM 10+** — Fast, efficient package manager (required)
+- **Biome.js 2.4+** — Fast formatting and linting
 - **Docker Compose** — Local PostgreSQL for Hyperdrive development
 - **OpenSpec** — Specification-driven development workflow
-- **Wrangler** — Cloudflare CLI for development and deployment
+- **Wrangler 4.63+** — Cloudflare CLI for development and deployment
 
 ### Cloudflare Services
 - **D1** — SQLite database at the edge (separate schema in `db/d1/`)
@@ -311,10 +312,15 @@ pnpm test:e2e
 ### Coverage Requirements
 
 - **Minimum coverage: 90%** for all metrics (statements, branches, functions, lines)
+- Coverage is enforced via Vitest v8 coverage provider with `thresholds` config
 - Tests are located in `__tests__/` directories alongside source files
 - Use `*.test.ts` or `*.test.tsx` for unit tests
 - Use `*.integration.test.ts` for integration tests
 - Use `e2e/*.spec.ts` for Playwright end-to-end tests
+
+### Playwright E2E Convention
+
+- **Data Prefix Constraint:** All data input in Playwright E2E tests MUST use the prefix `from Playwright-E2E`. This applies to names, descriptions, titles, and simulated user-generated content, preventing false confidence by differentiating manually-seeded data from E2E data. Use the `e2eData` and `e2eEmail` helpers defined in `e2e/helpers/test-data.ts`.
 
 ---
 
@@ -488,17 +494,21 @@ This project follows a **clean architecture** with SOLID principles and dependen
 
 All bindings are defined in `wrangler.jsonc` and auto-typed in `worker-configuration.d.ts` via `wrangler types`.
 
-| Service | Purpose | Binding | Type | Local Testing |
-|---------|---------|---------|------|---------------|
-| **D1** | SQLite database | `D1` | `D1Database` | Wrangler local mode |
-| **Hyperdrive** | PostgreSQL pooling | `HYPERDRIVE` | `Hyperdrive` | Docker Compose |
-| **KV** | Key-value cache | `KV` | `KVNamespace` | Wrangler local mode |
-| **R2** | Object storage | `R2` | `R2Bucket` | Wrangler local mode |
-| **Durable Objects** | Real-time, queues | `DO_COUNTER` | `DurableObjectNamespace` | Wrangler dev |
-| **Vectorize** | Vector embeddings | `VECTORIZE` | `VectorizeIndex` | Remote mode |
-| **Workers AI** | AI inference | `AI` | `Ai` | Remote mode |
-| **Browser Rendering** | Browser automation | `BROWSER` | `Fetcher` | Remote mode |
-| **Rate Limiter** | Request throttling | `*_RATE_LIMITER` | `RateLimit` | Wrangler dev |
+| Binding | Type | Config Key | Local Dev Status |
+|---------|------|------------|------------------|
+| `D1` | `D1Database` | `d1_databases` | ✅ Local via Wrangler |
+| `HYPERDRIVE` | `Hyperdrive` | `hyperdrive` | ✅ Docker PostgreSQL |
+| `KV` | `KVNamespace` | `kv_namespaces` | ✅ Local via Wrangler |
+| `R2` | `R2Bucket` | `r2_buckets` | ✅ Local via Wrangler |
+| `DO_COUNTER` | `DurableObjectNamespace` | `durable_objects` | ✅ Local sqlite_classes |
+| `VECTORIZE` | `VectorizeIndex` | `vectorize` | ⚠️ `remote: true` |
+| `AI` | `Ai` | `ai` | ⚠️ `remote: true` |
+| `BROWSER` | `Fetcher` | `browser` | ⚠️ Remote only |
+| `LONG_RATE_LIMITER` | `RateLimit` | `ratelimits` | ✅ Local via Wrangler |
+| `SHORT_RATE_LIMITER` | `RateLimit` | `ratelimits` | ✅ Local via Wrangler |
+| `ASSETS` | `Fetcher` | `assets` | ✅ Local via Wrangler |
+
+> **Note:** `VECTORIZE` and `AI` use `remote: true` — they require an active Cloudflare account even during local development (`wrangler dev`). Ensure bindings are provisioned before testing these features.
 
 ---
 

@@ -2,7 +2,7 @@
 # Copy this file to .dev.vars and fill in your actual values.
 #
 # ⚡ AUTO-DISCOVERY FEATURE:
-# The inject-env.js script automatically discovers ALL placeholder keys from
+# The gen-wrangler.js script automatically discovers ALL placeholder keys from
 # wrangler.jsonc (any ${PLACEHOLDER} pattern), so you don't need to manually
 # update this file when adding new placeholders - just add the KEY=value pair!
 #
