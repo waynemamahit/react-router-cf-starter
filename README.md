@@ -8,19 +8,19 @@ A production-ready full-stack starter template built on **React Router v7 (Frame
 
 ### Frontend
 - **React 19.2+** — Latest modern patterns with hooks and Suspense
-- **React Router v7.13+** — Framework Mode with SSR, loaders/actions, type-safe data flow
-- **TypeScript 5.9+** — Strict type safety, **no `any` type allowed**, `verbatimModuleSyntax`
-- **TailwindCSS 4.2+** — Utility-first CSS with mobile-first responsive design
+- **React Router v7.15+** — Framework Mode with SSR, loaders/actions, type-safe data flow
+- **TypeScript 6.0+** — Strict type safety, **no `any` type allowed**, `verbatimModuleSyntax`
+- **TailwindCSS 4.3+** — Utility-first CSS with mobile-first responsive design
 - **Semantic HTML & ARIA** — Accessibility (skip links, keyboard nav, focus management) and SEO
 - **DaisyUI 5.5+** — UI components with customizable themes (default: **light**)
-- **Lucide React 0.575+** — Icon library (`lucide-react`)
-- **react-i18next 16+** — Frontend internationalization with centralized translation files
+- **Lucide React 1.14+** — Icon library (`lucide-react`)
+- **react-i18next 17+** — Frontend internationalization with centralized translation files
 - **Form Layouts** — Following [TailwindCSS form layouts](https://tailwindcss.com/plus/ui-blocks/application-ui/forms/form-layouts)
 
 ### Backend
 - **Hono 4.12+** — Fast, edge-native API framework with SOLID principles
-- **TypeScript 5.9+** — Type-safe backend, **no `any` type allowed**
-- **i18next 25+** — Backend internationalization with Hono integration
+- **TypeScript 6.0+** — Type-safe backend, **no `any` type allowed**
+- **i18next 26+** — Backend internationalization with Hono integration
 - **CSRF Protection** — Hono `csrf()` middleware for all mutation endpoints
 - **CORS Protection** — Configurable origins via `CORS_ALLOWED_ORIGINS` in `wrangler.jsonc`
 - **Rate Limiting** — Edge-native via Cloudflare `RateLimit` bindings with `hono-rate-limiter`
@@ -39,19 +39,19 @@ A production-ready full-stack starter template built on **React Router v7 (Frame
 - **Theme & Language Selector** — Built into main layout with DaisyUI themes
 
 ### Testing
-- **Vitest 4.0+** — Unit + integration testing framework
-- **React Testing Library 16+** — Component testing with accessibility focus
-- **Playwright 1.58+** — End-to-end testing across Chromium, Firefox, WebKit
+- **Vitest 4.1+** — Unit + integration testing framework
+- **React Testing Library 16.3+** — Component testing with accessibility focus
+- **Playwright 1.59+** — End-to-end testing across Chromium, Firefox, WebKit
 - **90%+ Coverage** — Minimum coverage requirement, enforced via threshold config
 - **Playwright E2E Data Prefix** — All E2E test data input MUST use the prefix `from Playwright-E2E`
 - **Comprehensive Testing** — Component, API, utility, integration, and E2E tests
 
 ### DevOps
-- **PNPM 10+** — Fast, efficient package manager (required)
+- **PNPM 11+** — Fast, efficient package manager (required)
 - **Biome.js 2.4+** — Fast formatting and linting
 - **Docker Compose** — Local PostgreSQL for Hyperdrive development
 - **OpenSpec** — Specification-driven development workflow
-- **Wrangler 4.63+** — Cloudflare CLI for development and deployment
+- **Wrangler 4.90+** — Cloudflare CLI for development and deployment
 
 ### Cloudflare Services
 - **D1** — SQLite database at the edge (separate schema in `db/d1/`)
@@ -90,7 +90,7 @@ Before starting, ensure you have the following installed:
 | Tool | Version | Purpose |
 |------|---------|---------|
 | **Node.js** | 24+ LTS | JavaScript runtime |
-| **PNPM** | 10+ | Package manager |
+| **PNPM** | 11+ | Package manager |
 | **Docker** | Latest | Local PostgreSQL for Hyperdrive |
 | **Wrangler CLI** | Latest | Cloudflare deployments |
 | **Git** | Latest | Version control |
