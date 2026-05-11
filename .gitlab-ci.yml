@@ -1,4 +1,4 @@
-image: node:24.15.0-alpine
+image: node:lts
 
 stages:
   - deploy
@@ -9,6 +9,9 @@ cache:
 
 # Shared setup steps (checkout, Node, pnpm, install, build)
 .setup: &setup
+  - npm install -g n
+  - n $(node -p "require('./package.json').engines.node")
+  - hash -r
   - node --version
   - npm install -g pnpm@latest
   - pnpm install

@@ -2,6 +2,9 @@
   "name": "react-router-cf-starter",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "24.15.0"
+  },
   "scripts": {
     "postinstall": "pnpm typecheck",
     "lint": "biome check --write",

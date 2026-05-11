@@ -1,4 +1,4 @@
-image: node:24.15.0-alpine
+image: node:lts
 
 pipelines:
   branches:
@@ -6,6 +6,9 @@ pipelines:
       - step:
           name: Deploy to Staging
           script:
+            - npm install -g n
+            - n $(node -p "require('./package.json').engines.node")
+            - hash -r
             - node --version
             - npm install -g pnpm@latest
             - pnpm install
@@ -25,6 +28,9 @@ pipelines:
       - step:
           name: Deploy to Production
           script:
+            - npm install -g n
+            - n $(node -p "require('./package.json').engines.node")
+            - hash -r
             - node --version
             - npm install -g pnpm@latest
             - pnpm install
