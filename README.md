@@ -8,12 +8,12 @@ A production-ready full-stack starter template built on **React Router v7 (Frame
 
 ### Frontend
 - **React 19.2+** — Latest modern patterns with hooks and Suspense
-- **React Router v7.15+** — Framework Mode with SSR, loaders/actions, type-safe data flow
+- **React Router v7.17+** — Framework Mode with SSR, loaders/actions, type-safe data flow
 - **TypeScript 6.0+** — Strict type safety, **no `any` type allowed**, `verbatimModuleSyntax`
 - **TailwindCSS 4.3+** — Utility-first CSS with mobile-first responsive design
 - **Semantic HTML & ARIA** — Accessibility (skip links, keyboard nav, focus management) and SEO
 - **DaisyUI 5.5+** — UI components with customizable themes (default: **light**)
-- **Lucide React 1.14+** — Icon library (`lucide-react`)
+- **Lucide React 1.18+** — Icon library (`lucide-react`)
 - **react-i18next 17+** — Frontend internationalization with centralized translation files
 - **Form Layouts** — Following [TailwindCSS form layouts](https://tailwindcss.com/plus/ui-blocks/application-ui/forms/form-layouts)
 
@@ -41,17 +41,17 @@ A production-ready full-stack starter template built on **React Router v7 (Frame
 ### Testing
 - **Vitest 4.1+** — Unit + integration testing framework
 - **React Testing Library 16.3+** — Component testing with accessibility focus
-- **Playwright 1.59+** — End-to-end testing across Chromium, Firefox, WebKit
+- **Playwright 1.60+** — End-to-end testing across Chromium, Firefox, WebKit
 - **90%+ Coverage** — Minimum coverage requirement, enforced via threshold config
 - **Playwright E2E Data Prefix** — All E2E test data input MUST use the prefix `from Playwright-E2E`
 - **Comprehensive Testing** — Component, API, utility, integration, and E2E tests
 
 ### DevOps
 - **PNPM 11+** — Fast, efficient package manager (required)
-- **Biome.js 2.4+** — Fast formatting and linting
+- **Biome.js 2.5+** — Fast formatting and linting
 - **Docker Compose** — Local PostgreSQL for Hyperdrive development
 - **OpenSpec** — Specification-driven development workflow
-- **Wrangler 4.90+** — Cloudflare CLI for development and deployment
+- **Wrangler 4.100+** — Cloudflare CLI for development and deployment
 
 ### Cloudflare Services
 - **D1** — SQLite database at the edge (separate schema in `db/d1/`)
