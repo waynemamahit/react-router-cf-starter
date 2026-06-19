@@ -5,7 +5,7 @@ context: |
 
   ## Purpose
 
-  A production-ready full-stack starter template built on **React Router v7 (Framework Mode)** with **Cloudflare Workers**. This project provides a scalable foundation for building modern web applications with SSR, comprehensive Cloudflare service integrations, clean architecture following SOLID principles, and specification-driven development with OpenSpec.
+  A production-ready full-stack starter template built on **React Router v8 (Framework Mode)** with **Cloudflare Workers**. This project provides a scalable foundation for building modern web applications with SSR, comprehensive Cloudflare service integrations, clean architecture following SOLID principles, and specification-driven development with OpenSpec.
 
   **Goals:**
 
@@ -35,10 +35,10 @@ context: |
   | Technology                | Version  | Purpose                                                        |
   | ------------------------- | -------- | -------------------------------------------------------------- |
   | **React**                 | 19.2+    | Latest modern patterns: hooks, Suspense, Server Components     |
-  | **React Router v7**       | 7.17+    | Framework Mode with SSR, loaders/actions, type-safe data flow  |
+  | **React Router v8**       | 8.0+     | Framework Mode with SSR, loaders/actions, type-safe data flow  |
   | **TailwindCSS**           | 4.3+     | Utility-first CSS with mobile-first responsive design          |
   | **DaisyUI**               | 5.5+     | UI components with customizable themes (default: **light**)    |
-  | **Lucide React**          | 1.18+    | `lucide-react` for UI icons                                    |
+  | **Lucide React**          | 1.21+    | `lucide-react` for UI icons                                    |
   | **react-i18next**         | 17+      | Frontend internationalization                                  |
 
   ### Backend
@@ -59,7 +59,7 @@ context: |
   | **Vitest**                  | 4.1+     | Unit and integration testing framework                       |
   | **React Testing Library**   | 16.3+    | Component testing with accessibility focus                   |
   | **@testing-library/jest-dom** | 6.9+   | Extended DOM matchers for assertions                         |
-  | **Playwright**              | 1.60+    | End-to-end testing across browsers                           |
+  | **Playwright**              | 1.61+    | End-to-end testing across browsers                           |
   | **jsdom**                   | 29.1+    | DOM environment for Vitest component tests                   |
   | **@vitest/coverage-v8**     | 4.1+     | Coverage provider with 90% threshold enforcement             |
 
@@ -82,8 +82,8 @@ context: |
   | Technology                     | Purpose                                           |
   | ------------------------------ | ------------------------------------------------- |
   | **Docker Compose**             | Local PostgreSQL for Hyperdrive development       |
-  | **Wrangler**                   | 4.100+, Cloudflare CLI for dev, types, deployment |
-  | **@cloudflare/vite-plugin**    | 1.40+, Vite integration for Workers dev           |
+  | **Wrangler**                   | 4.103+, Cloudflare CLI for dev, types, deployment |
+  | **@cloudflare/vite-plugin**    | 1.42+, Vite integration for Workers dev           |
 
   ---
 
@@ -91,7 +91,7 @@ context: |
 
   ```
   project-root/
-  ├── app/                          # Frontend (React Router v7 Framework Mode)
+  ├── app/                          # Frontend (React Router v8 Framework Mode)
   │   ├── components/               # React components (PascalCase files)
   │   │   └── __tests__/            # Component unit tests
   │   ├── containers/               # Frontend DI container (Awilix)
@@ -182,7 +182,7 @@ context: |
   ├── docker-compose.yml            # Local PostgreSQL for Hyperdrive
   ├── package.json                  # Dependencies and scripts (PNPM)
   ├── playwright.config.ts          # Playwright E2E configuration
-  ├── react-router.config.ts        # React Router v7 configuration
+  ├── react-router.config.ts        # React Router v8 configuration
   ├── tsconfig.json                 # TypeScript root config (strict, project refs)
   ├── tsconfig.node.json            # Node tooling TS config
   ├── tsconfig.cloudflare.json      # Cloudflare Workers TS config
@@ -1291,20 +1291,20 @@ context: |
   | -------------------------- | --------- | ------------------------------ |
   | `react`                    | 19.2.7    | UI framework                   |
   | `react-dom`                | 19.2.7    | React DOM renderer             |
-  | `react-router`             | 7.17.0    | Framework with SSR             |
-  | `hono`                     | 4.12.25   | Backend API framework          |
+  | `react-router`             | 8.0.1     | Framework with SSR             |
+  | `hono`                     | 4.12.26   | Backend API framework          |
   | `@hono/zod-validator`      | 0.8.0     | Zod validation middleware      |
   | `hono-rate-limiter`        | 0.5.3     | Rate limiting middleware       |
   | `drizzle-orm`              | 0.45.2    | Type-safe ORM                  |
   | `zod`                      | 4.4.3     | Schema validation              |
-  | `awilix`                   | 13.0.4    | Dependency injection (v13 API) |
+  | `awilix`                   | 13.0.5    | Dependency injection (v13 API) |
   | `i18next`                  | 26.3.1    | Internationalization           |
   | `react-i18next`            | 17.0.8    | React i18n integration         |
-  | `lucide-react`             | 1.18.0    | Icons                          |
+  | `lucide-react`             | 1.21.0    | Icons                          |
   | `postgres`                 | 3.4.9     | PostgreSQL driver (Hyperdrive) |
   | `bcryptjs`                 | 3.0.3     | Password hashing               |
   | `dotenv`                   | 17.4.2    | Env var loading for scripts    |
-  | `isbot`                    | 5.1.42    | Bot detection (SSR rendering)  |
+  | `isbot`                    | 5.1.43    | Bot detection (SSR rendering)  |
 
   ### Key NPM Packages (Development)
 
@@ -1316,24 +1316,24 @@ context: |
   | `@tailwindcss/vite`            | 4.3.1     | TailwindCSS Vite plugin          |
   | `daisyui`                      | 5.5.23    | UI components                    |
   | `vite`                         | 8.0.16    | Build tool                       |
-  | `@cloudflare/vite-plugin`      | 1.40.2    | Cloudflare Workers Vite plugin   |
-  | `@react-router/dev`            | 7.17.0    | React Router build tooling       |
-  | `@cloudflare/vitest-pool-workers` | 0.16.15 | Vitest workers pool for CF tests |
-  | `vitest`                       | 4.1.8     | Testing framework                |
-  | `@vitest/coverage-v8`          | 4.1.8     | Coverage provider (90% enforced) |
+  | `@cloudflare/vite-plugin`      | 1.42.1    | Cloudflare Workers Vite plugin   |
+  | `@react-router/dev`            | 8.0.1     | React Router build tooling       |
+  | `@cloudflare/vitest-pool-workers` | 0.16.18 | Vitest workers pool for CF tests |
+  | `vitest`                       | 4.1.9     | Testing framework                |
+  | `@vitest/coverage-v8`          | 4.1.9     | Coverage provider (90% enforced) |
   | `@vitejs/plugin-react`         | 6.0.2     | React plugin for Vite/Vitest     |
   | `@testing-library/react`       | 16.3.2    | Component testing                |
   | `@testing-library/jest-dom`    | 6.9.1     | DOM matchers                     |
   | `jsdom`                        | 29.1.1    | DOM environment for tests        |
-  | `@playwright/test`             | 1.60.0    | E2E testing                      |
+  | `@playwright/test`             | 1.61.0    | E2E testing                      |
   | `drizzle-kit`                  | 0.31.10   | Migration generation             |
   | `tsx`                          | 4.22.4    | TypeScript script runner         |
-  | `wrangler`                     | 4.100.0   | Cloudflare Workers CLI           |
+  | `wrangler`                     | 4.103.0   | Cloudflare Workers CLI           |
 
   ### External Documentation
 
   - [React 19 Docs](https://react.dev)
-  - [React Router v7 Docs](https://reactrouter.com)
+  - [React Router v8 Docs](https://reactrouter.com)
   - [Hono Documentation](https://hono.dev)
   - [Cloudflare Workers Docs](https://developers.cloudflare.com/workers)
   - [Cloudflare D1 Docs](https://developers.cloudflare.com/d1)

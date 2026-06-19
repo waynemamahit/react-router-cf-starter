@@ -5,7 +5,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "react-router-cf-starter",
-  "compatibility_date": "2026-06-11",
+  "compatibility_date": "2026-06-17",
   "compatibility_flags": ["nodejs_compat"],
   "main": "./server/app.ts",
   "observability": {
@@ -102,7 +102,7 @@
       "name": "LONG_RATE_LIMITER",
       "namespace_id": "1001",
       "simple": {
-        "limit": 100,
+        "limit": 1000,
         "period": 60
       }
     },

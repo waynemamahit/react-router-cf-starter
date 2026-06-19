@@ -1,3 +1,5 @@
+import { env } from "cloudflare:workers";
+
 import { useNavigate } from "react-router";
 import { Welcome } from "../welcome/welcome";
 import type { Route } from "./+types/home";
@@ -9,9 +11,8 @@ export function meta() {
   ];
 }
 
-export function loader({ context }: Route.LoaderArgs) {
-  context.cloudflare.env.KV;
-  return { message: context.cloudflare.env.VALUE_FROM_CLOUDFLARE };
+export function loader() {
+  return { message: env.VALUE_FROM_CLOUDFLARE };
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {

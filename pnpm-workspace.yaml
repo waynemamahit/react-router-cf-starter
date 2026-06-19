@@ -3,6 +3,11 @@ allowBuilds:
   sharp: true
   workerd: true
 minimumReleaseAgeExclude:
-  - '@types/node@25.9.2'
-  - '@types/react@19.2.17'
-  - isbot@5.1.41
+  - '@cloudflare/vite-plugin@1.42.1'
+  - '@cloudflare/vitest-pool-workers@0.16.18'
+  - '@react-router/dev@8.0.1'
+  - '@react-router/node@8.0.1'
+  - '@types/node@26.0.0'
+  - miniflare@4.20260617.1
+  - react-router@8.0.1
+  - wrangler@4.103.0

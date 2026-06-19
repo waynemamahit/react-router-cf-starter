@@ -4,17 +4,17 @@ import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 import { Hono } from "hono/tiny";
 import { rateLimiter } from "hono-rate-limiter";
-import { createRequestHandler } from "react-router";
+import {
+  createContext,
+  createRequestHandler,
+  RouterContextProvider,
+} from "react-router";
 import apiV1 from "./routes/v1";
 
-declare module "react-router" {
-  export interface AppLoadContext {
-    cloudflare: {
-      env: Env;
-      ctx: ExecutionContext;
-    };
-  }
-}
+const cloudflareContext = createContext<{
+  env: Env;
+  ctx: ExecutionContext;
+}>();
 
 // Create the React Router request handler *once* (outside request scope)
 const requestHandler = createRequestHandler(
@@ -39,20 +39,19 @@ app.route("/api/v1", apiV1);
 
 // Attach the React Router handler to all routes
 app.all("*", async (c) => {
-  const request = c.req.raw;
-  const env = c.env;
-  const ctx = c.executionCtx;
-
-  // Call React Router’s handler with proper context
-  return await requestHandler(request, {
-    cloudflare: { env, ctx: ctx as ExecutionContext },
+  const routerContext = new RouterContextProvider();
+  routerContext.set(cloudflareContext, {
+    env: c.env,
+    ctx: c.executionCtx as ExecutionContext,
   });
+  // Call React Router’s handler with proper context
+  return await requestHandler(c.req.raw, routerContext);
 });
 
 const handler: ExportedHandler<Env> = {
   fetch: app.fetch,
 };
 
-export default handler;
+export default handler satisfies ExportedHandler<Env>;
 
 export { Counter } from "./durable_objects/counter.do";
