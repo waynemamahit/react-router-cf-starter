@@ -8,12 +8,12 @@ A production-ready full-stack starter template built on **React Router v8 (Frame
 
 ### Frontend
 - **React 19.2+** — Latest modern patterns with hooks and Suspense
-- **React Router v8.0+** — Framework Mode with SSR, loaders/actions, type-safe data flow
+- **React Router v8.1+** — Framework Mode with SSR, loaders/actions, type-safe data flow
 - **TypeScript 6.0+** — Strict type safety, **no `any` type allowed**, `verbatimModuleSyntax`
 - **TailwindCSS 4.3+** — Utility-first CSS with mobile-first responsive design
 - **Semantic HTML & ARIA** — Accessibility (skip links, keyboard nav, focus management) and SEO
-- **DaisyUI 5.5+** — UI components with customizable themes (default: **light**)
-- **Lucide React 1.21+** — Icon library (`lucide-react`)
+- **DaisyUI 5.6+** — UI components with customizable themes (default: **light**)
+- **Lucide React 1.22+** — Icon library (`lucide-react`)
 - **react-i18next 17+** — Frontend internationalization with centralized translation files
 - **Form Layouts** — Following [TailwindCSS form layouts](https://tailwindcss.com/plus/ui-blocks/application-ui/forms/form-layouts)
 
@@ -51,7 +51,7 @@ A production-ready full-stack starter template built on **React Router v8 (Frame
 - **Biome.js 2.5+** — Fast formatting and linting
 - **Docker Compose** — Local PostgreSQL for Hyperdrive development
 - **OpenSpec** — Specification-driven development workflow
-- **Wrangler 4.103+** — Cloudflare CLI for development and deployment
+- **Wrangler 4.106+** — Cloudflare CLI for development and deployment
 
 ### Cloudflare Services
 - **D1** — SQLite database at the edge (separate schema in `db/d1/`)
