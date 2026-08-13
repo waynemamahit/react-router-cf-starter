@@ -8,18 +8,18 @@ A production-ready full-stack starter template built on **React Router v8 (Frame
 
 ### Frontend
 - **React 19.2+** — Latest modern patterns with hooks and Suspense
-- **React Router v8.1+** — Framework Mode with SSR, loaders/actions, type-safe data flow
-- **TypeScript 6.0+** — Strict type safety, **no `any` type allowed**, `verbatimModuleSyntax`
+- **React Router v8.3+** — Framework Mode with SSR, loaders/actions, type-safe data flow
+- **TypeScript 7.0+** — Strict type safety, **no `any` type allowed**, `verbatimModuleSyntax`
 - **TailwindCSS 4.3+** — Utility-first CSS with mobile-first responsive design
 - **Semantic HTML & ARIA** — Accessibility (skip links, keyboard nav, focus management) and SEO
-- **DaisyUI 5.6+** — UI components with customizable themes (default: **light**)
-- **Lucide React 1.22+** — Icon library (`lucide-react`)
+- **DaisyUI 5.7+** — UI components with customizable themes (default: **light**)
+- **Lucide React 1.31+** — Icon library (`lucide-react`)
 - **react-i18next 17+** — Frontend internationalization with centralized translation files
 - **Form Layouts** — Following [TailwindCSS form layouts](https://tailwindcss.com/plus/ui-blocks/application-ui/forms/form-layouts)
 
 ### Backend
-- **Hono 4.12+** — Fast, edge-native API framework with SOLID principles
-- **TypeScript 6.0+** — Type-safe backend, **no `any` type allowed**
+- **Hono 4.13+** — Fast, edge-native API framework with SOLID principles
+- **TypeScript 7.0+** — Type-safe backend, **no `any` type allowed**
 - **i18next 26+** — Backend internationalization with Hono integration
 - **CSRF Protection** — Hono `csrf()` middleware for all mutation endpoints
 - **CORS Protection** — Configurable origins via `CORS_ALLOWED_ORIGINS` in `wrangler.jsonc`
@@ -41,7 +41,7 @@ A production-ready full-stack starter template built on **React Router v8 (Frame
 ### Testing
 - **Vitest 4.1+** — Unit + integration testing framework
 - **React Testing Library 16.3+** — Component testing with accessibility focus
-- **Playwright 1.61+** — End-to-end testing across Chromium, Firefox, WebKit
+- **Playwright 1.62+** — End-to-end testing across Chromium, Firefox, WebKit
 - **90%+ Coverage** — Minimum coverage requirement, enforced via threshold config
 - **Playwright E2E Data Prefix** — All E2E test data input MUST use the prefix `from Playwright-E2E`
 - **Comprehensive Testing** — Component, API, utility, integration, and E2E tests
@@ -51,7 +51,7 @@ A production-ready full-stack starter template built on **React Router v8 (Frame
 - **Biome.js 2.5+** — Fast formatting and linting
 - **Docker Compose** — Local PostgreSQL for Hyperdrive development
 - **OpenSpec** — Specification-driven development workflow
-- **Wrangler 4.106+** — Cloudflare CLI for development and deployment
+- **Wrangler 4.122+** — Cloudflare CLI for development and deployment
 
 ### Cloudflare Services
 - **D1** — SQLite database at the edge (separate schema in `db/d1/`)

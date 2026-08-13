@@ -26,26 +26,26 @@ context: |
   | --------------------- | ------------- | -------- | -------------------------------------------- |
   | **Runtime**           | Node.js       | 24+ LTS  | JavaScript runtime                           |
   | **Package Manager**   | PNPM          | 11+      | Fast, efficient dependency management        |
-  | **Language**          | TypeScript    | 6.0+     | Type safety, **no `any` type allowed**       |
+  | **Language**          | TypeScript    | 7.0+     | Type safety, **no `any` type allowed**       |
   | **Formatting/Linting**| Biome.js      | 2.5+     | Fast, unified code quality tooling           |
-  | **Build Tool**        | Vite          | 8.1+     | Frontend build and dev server                |
+  | **Build Tool**        | Vite          | 8.2+     | Frontend build and dev server                |
 
   ### Frontend
 
   | Technology                | Version  | Purpose                                                        |
   | ------------------------- | -------- | -------------------------------------------------------------- |
   | **React**                 | 19.2+    | Latest modern patterns: hooks, Suspense, Server Components     |
-  | **React Router v8**       | 8.1+     | Framework Mode with SSR, loaders/actions, type-safe data flow  |
+  | **React Router v8**       | 8.3+     | Framework Mode with SSR, loaders/actions, type-safe data flow  |
   | **TailwindCSS**           | 4.3+     | Utility-first CSS with mobile-first responsive design          |
-  | **DaisyUI**               | 5.6+     | UI components with customizable themes (default: **light**)    |
-  | **Lucide React**          | 1.22+    | `lucide-react` for UI icons                                    |
+  | **DaisyUI**               | 5.7+     | UI components with customizable themes (default: **light**)    |
+  | **Lucide React**          | 1.31+    | `lucide-react` for UI icons                                    |
   | **react-i18next**         | 17+      | Frontend internationalization                                  |
 
   ### Backend
 
   | Technology                | Version  | Purpose                                                        |
   | ------------------------- | -------- | -------------------------------------------------------------- |
-  | **Hono**                  | 4.12+    | Fast, edge-native API framework with SOLID principles          |
+  | **Hono**                  | 4.13+    | Fast, edge-native API framework with SOLID principles          |
   | **i18next**               | 26+      | Backend internationalization with Hono integration             |
   | **Drizzle ORM**           | 0.45+    | Type-safe database with migrations (separate D1 + Hyperdrive)  |
   | **Zod**                   | 4+       | Runtime schema validation (shared frontend + backend)          |
@@ -58,9 +58,9 @@ context: |
   | --------------------------- | -------- | ------------------------------------------------------------ |
   | **Vitest**                  | 4.1+     | Unit and integration testing framework                       |
   | **React Testing Library**   | 16.3+    | Component testing with accessibility focus                   |
-  | **@testing-library/jest-dom** | 6.9+   | Extended DOM matchers for assertions                         |
-  | **Playwright**              | 1.61+    | End-to-end testing across browsers                           |
-  | **jsdom**                   | 29.1+    | DOM environment for Vitest component tests                   |
+  | **@testing-library/jest-dom** | 7.0+   | Extended DOM matchers for assertions                         |
+  | **Playwright**              | 1.62+    | End-to-end testing across browsers                           |
+  | **jsdom**                   | 30.0+    | DOM environment for Vitest component tests                   |
   | **@vitest/coverage-v8**     | 4.1+     | Coverage provider with 90% threshold enforcement             |
 
   ### Cloudflare Services
@@ -82,8 +82,8 @@ context: |
   | Technology                     | Purpose                                           |
   | ------------------------------ | ------------------------------------------------- |
   | **Docker Compose**             | Local PostgreSQL for Hyperdrive development       |
-  | **Wrangler**                   | 4.106+, Cloudflare CLI for dev, types, deployment |
-  | **@cloudflare/vite-plugin**    | 1.42+, Vite integration for Workers dev           |
+  | **Wrangler**                   | 4.122+, Cloudflare CLI for dev, types, deployment |
+  | **@cloudflare/vite-plugin**    | 1.52+, Vite integration for Workers dev           |
 
   ---
 
@@ -279,18 +279,19 @@ context: |
 
   Configured in `biome.json`:
 
-  - **Indent**: 2 spaces
+  - **Indent**: 2 spaces (`indentStyle: "space"`)
   - **Quotes**: Double quotes for strings
   - **Semicolons**: Always (inferred by Biome default)
   - **Trailing commas**: All (Biome default)
-  - **Import organization**: Automatic via `organizeImports: "on"`
+  - **Linter preset**: `"recommended"`
+  - **Import organization**: Automatic via `assist.actions.source.organizeImports: "on"`
   - **Domains**: React rules enabled (`"react": "recommended"`)
   - **CSS**: TailwindCSS directives parsing enabled
 
   ```jsonc
   // biome.json — Biome 2.5+ configuration
   {
-    "$schema": "https://biomejs.dev/schemas/2.5.1/schema.json",
+    "$schema": "https://biomejs.dev/schemas/2.5.8/schema.json",
     "vcs": {
       "enabled": true,
       "clientKind": "git",
@@ -306,8 +307,21 @@ context: |
         "!!.wrangler"
       ]
     },
+    "formatter": {
+      "enabled": true,
+      "indentStyle": "space"
+    },
     "linter": {
+      "enabled": true,
+      "rules": { "preset": "recommended" },
       "domains": { "react": "recommended" }
+    },
+    "javascript": {
+      "formatter": { "quoteStyle": "double" }
+    },
+    "assist": {
+      "enabled": true,
+      "actions": { "source": { "organizeImports": "on" } }
     },
     "css": {
       "parser": { "tailwindDirectives": true }
@@ -1303,48 +1317,49 @@ context: |
 
   ### Key NPM Packages (Production)
 
-  | Package                    | Version   | Purpose                        |
-  | -------------------------- | --------- | ------------------------------ |
-  | `react`                    | 19.2.7    | UI framework                   |
-  | `react-dom`                | 19.2.7    | React DOM renderer             |
-  | `react-router`             | 8.1.0     | Framework with SSR             |
-  | `hono`                     | 4.12.27   | Backend API framework          |
-  | `@hono/zod-validator`      | 0.8.0     | Zod validation middleware      |
-  | `hono-rate-limiter`        | 0.5.3     | Rate limiting middleware       |
-  | `drizzle-orm`              | 0.45.2    | Type-safe ORM                  |
-  | `zod`                      | 4.4.3     | Schema validation              |
-  | `awilix`                   | 13.0.5    | Dependency injection (v13 API) |
-  | `i18next`                  | 26.3.4    | Internationalization           |
-  | `react-i18next`            | 17.0.8    | React i18n integration         |
-  | `lucide-react`             | 1.22.0    | Icons                          |
-  | `postgres`                 | 3.4.9     | PostgreSQL driver (Hyperdrive) |
-  | `bcryptjs`                 | 3.0.3     | Password hashing               |
-  | `dotenv`                   | 17.4.2    | Env var loading for scripts    |
-  | `isbot`                    | 5.1.44    | Bot detection (SSR rendering)  |
+  | Package                    | Version         | Purpose                        |
+  | -------------------------- | --------------- | ------------------------------ |
+  | `react`                    | 19.2.8          | UI framework                   |
+  | `react-dom`                | 19.2.8          | React DOM renderer             |
+  | `react-router`             | 8.3.0           | Framework with SSR             |
+  | `hono`                     | 4.13.1          | Backend API framework          |
+  | `@hono/zod-validator`      | 0.9.0           | Zod validation middleware      |
+  | `hono-rate-limiter`        | 0.5.3           | Rate limiting middleware       |
+  | `drizzle-orm`              | 0.45.2          | Type-safe ORM                  |
+  | `zod`                      | 4.4.3           | Schema validation              |
+  | `awilix`                   | 13.0.5          | Dependency injection (v13 API) |
+  | `i18next`                  | 26.3.6          | Internationalization           |
+  | `react-i18next`            | 17.0.11         | React i18n integration         |
+  | `lucide-react`             | 1.31.0          | Icons                          |
+  | `postgres`                 | 3.4.9           | PostgreSQL driver (Hyperdrive) |
+  | `bcryptjs`                 | 3.0.3           | Password hashing               |
+  | `dotenv`                   | 17.4.2          | Env var loading for scripts    |
+  | `isbot`                    | 5.2.1           | Bot detection (SSR rendering)  |
+  | `@cloudflare/workers-types`| 5.20260813.1    | Cloudflare Workers type defs   |
 
   ### Key NPM Packages (Development)
 
   | Package                        | Version   | Purpose                          |
   | ------------------------------ | --------- | -------------------------------- |
-  | `typescript`                   | 6.0.3     | Type checking                    |
-  | `@biomejs/biome`               | 2.5.1     | Formatting + linting             |
-  | `tailwindcss`                  | 4.3.2     | Utility CSS                      |
-  | `@tailwindcss/vite`            | 4.3.2     | TailwindCSS Vite plugin          |
-  | `daisyui`                      | 5.6.6     | UI components                    |
-  | `vite`                         | 8.1.2     | Build tool                       |
-  | `@cloudflare/vite-plugin`      | 1.42.4    | Cloudflare Workers Vite plugin   |
-  | `@react-router/dev`            | 8.1.0     | React Router build tooling       |
-  | `@cloudflare/vitest-pool-workers` | 0.17.0 | Vitest workers pool for CF tests |
-  | `vitest`                       | 4.1.9     | Testing framework                |
-  | `@vitest/coverage-v8`          | 4.1.9     | Coverage provider (90% enforced) |
-  | `@vitejs/plugin-react`         | 6.0.3     | React plugin for Vite/Vitest     |
+  | `typescript`                   | 7.0.2     | Type checking                    |
+  | `@biomejs/biome`               | 2.5.8     | Formatting + linting             |
+  | `tailwindcss`                  | 4.3.3     | Utility CSS                      |
+  | `@tailwindcss/vite`            | 4.3.3     | TailwindCSS Vite plugin          |
+  | `daisyui`                      | 5.7.16    | UI components                    |
+  | `vite`                         | 8.2.1     | Build tool                       |
+  | `@cloudflare/vite-plugin`      | 1.52.0    | Cloudflare Workers Vite plugin   |
+  | `@react-router/dev`            | 8.3.0     | React Router build tooling       |
+  | `@cloudflare/vitest-pool-workers` | 0.21.2 | Vitest workers pool for CF tests |
+  | `vitest`                       | 4.1.10    | Testing framework                |
+  | `@vitest/coverage-v8`          | 4.1.10    | Coverage provider (90% enforced) |
+  | `@vitejs/plugin-react`         | 6.0.5     | React plugin for Vite/Vitest     |
   | `@testing-library/react`       | 16.3.2    | Component testing                |
-  | `@testing-library/jest-dom`    | 6.9.1     | DOM matchers                     |
-  | `jsdom`                        | 29.1.1    | DOM environment for tests        |
-  | `@playwright/test`             | 1.61.1    | E2E testing                      |
+  | `@testing-library/jest-dom`    | 7.0.1     | DOM matchers                     |
+  | `jsdom`                        | 30.0.1    | DOM environment for tests        |
+  | `@playwright/test`             | 1.62.1    | E2E testing                      |
   | `drizzle-kit`                  | 0.31.10   | Migration generation             |
-  | `tsx`                          | 4.22.4    | TypeScript script runner         |
-  | `wrangler`                     | 4.106.0   | Cloudflare Workers CLI           |
+  | `tsx`                          | 4.23.12   | TypeScript script runner         |
+  | `wrangler`                     | 4.122.0   | Cloudflare Workers CLI           |
 
   ### External Documentation
 
