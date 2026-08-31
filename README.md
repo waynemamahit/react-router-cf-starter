@@ -13,7 +13,7 @@ A production-ready full-stack starter template built on **React Router v8 (Frame
 - **TailwindCSS 4.3+** — Utility-first CSS with mobile-first responsive design
 - **Semantic HTML & ARIA** — Accessibility (skip links, keyboard nav, focus management) and SEO
 - **DaisyUI 5.7+** — UI components with customizable themes (default: **light**)
-- **Lucide React 1.31+** — Icon library (`lucide-react`)
+- **Lucide React 1.38+** — Icon library (`lucide-react`)
 - **react-i18next 17+** — Frontend internationalization with centralized translation files
 - **Form Layouts** — Following [TailwindCSS form layouts](https://tailwindcss.com/plus/ui-blocks/application-ui/forms/form-layouts)
 
@@ -51,7 +51,7 @@ A production-ready full-stack starter template built on **React Router v8 (Frame
 - **Biome.js 2.5+** — Fast formatting and linting
 - **Docker Compose** — Local PostgreSQL for Hyperdrive development
 - **OpenSpec** — Specification-driven development workflow
-- **Wrangler 4.122+** — Cloudflare CLI for development and deployment
+- **Wrangler 4.127+** — Cloudflare CLI for development and deployment
 
 ### Cloudflare Services
 - **D1** — SQLite database at the edge (separate schema in `db/d1/`)
@@ -89,7 +89,7 @@ Before starting, ensure you have the following installed:
 
 | Tool | Version | Purpose |
 |------|---------|---------|
-| **Node.js** | 24+ LTS | JavaScript runtime |
+| **Node.js** | 24.20.0 | JavaScript runtime (pinned in `package.json` engines) |
 | **PNPM** | 11+ | Package manager |
 | **Docker** | Latest | Local PostgreSQL for Hyperdrive |
 | **Wrangler CLI** | Latest | Cloudflare deployments |

@@ -24,7 +24,7 @@ context: |
 
   | Category              | Technology    | Version  | Purpose                                      |
   | --------------------- | ------------- | -------- | -------------------------------------------- |
-  | **Runtime**           | Node.js       | 24+ LTS  | JavaScript runtime                           |
+  | **Runtime**           | Node.js       | 24.20.0  | JavaScript runtime (pinned in `engines`)     |
   | **Package Manager**   | PNPM          | 11+      | Fast, efficient dependency management        |
   | **Language**          | TypeScript    | 7.0+     | Type safety, **no `any` type allowed**       |
   | **Formatting/Linting**| Biome.js      | 2.5+     | Fast, unified code quality tooling           |
@@ -38,7 +38,7 @@ context: |
   | **React Router v8**       | 8.3+     | Framework Mode with SSR, loaders/actions, type-safe data flow  |
   | **TailwindCSS**           | 4.3+     | Utility-first CSS with mobile-first responsive design          |
   | **DaisyUI**               | 5.7+     | UI components with customizable themes (default: **light**)    |
-  | **Lucide React**          | 1.31+    | `lucide-react` for UI icons                                    |
+  | **Lucide React**          | 1.38+    | `lucide-react` for UI icons                                    |
   | **react-i18next**         | 17+      | Frontend internationalization                                  |
 
   ### Backend
@@ -82,8 +82,8 @@ context: |
   | Technology                     | Purpose                                           |
   | ------------------------------ | ------------------------------------------------- |
   | **Docker Compose**             | Local PostgreSQL for Hyperdrive development       |
-  | **Wrangler**                   | 4.122+, Cloudflare CLI for dev, types, deployment |
-  | **@cloudflare/vite-plugin**    | 1.52+, Vite integration for Workers dev           |
+  | **Wrangler**                   | 4.127+, Cloudflare CLI for dev, types, deployment |
+  | **@cloudflare/vite-plugin**    | 1.54+, Vite integration for Workers dev           |
 
   ---
 
@@ -291,7 +291,7 @@ context: |
   ```jsonc
   // biome.json — Biome 2.5+ configuration
   {
-    "$schema": "https://biomejs.dev/schemas/2.5.8/schema.json",
+    "$schema": "https://biomejs.dev/schemas/2.5.11/schema.json",
     "vcs": {
       "enabled": true,
       "clientKind": "git",
@@ -615,7 +615,7 @@ context: |
   ### Rate Limiting
 
   - Configured via Cloudflare `RateLimit` bindings in `wrangler.jsonc`
-  - Two tiers: `LONG_RATE_LIMITER` (100 req/60s) and `SHORT_RATE_LIMITER` (20 req/10s)
+  - Two tiers: `LONG_RATE_LIMITER` (1000 req/60s) and `SHORT_RATE_LIMITER` (20 req/10s)
   - Applied via `hono-rate-limiter` middleware with `cf-connecting-ip` key
 
   ### Secure Headers
@@ -1321,45 +1321,49 @@ context: |
   | -------------------------- | --------------- | ------------------------------ |
   | `react`                    | 19.2.8          | UI framework                   |
   | `react-dom`                | 19.2.8          | React DOM renderer             |
-  | `react-router`             | 8.3.0           | Framework with SSR             |
-  | `hono`                     | 4.13.1          | Backend API framework          |
-  | `@hono/zod-validator`      | 0.9.0           | Zod validation middleware      |
+  | `react-router`             | 8.3.1           | Framework with SSR             |
+  | `hono`                     | 4.13.5          | Backend API framework          |
+  | `@hono/zod-validator`      | 0.9.1           | Zod validation middleware      |
   | `hono-rate-limiter`        | 0.5.3           | Rate limiting middleware       |
   | `drizzle-orm`              | 0.45.2          | Type-safe ORM                  |
-  | `zod`                      | 4.4.3           | Schema validation              |
+  | `zod`                      | 4.5.4           | Schema validation              |
   | `awilix`                   | 13.0.5          | Dependency injection (v13 API) |
-  | `i18next`                  | 26.3.6          | Internationalization           |
-  | `react-i18next`            | 17.0.11         | React i18n integration         |
-  | `lucide-react`             | 1.31.0          | Icons                          |
+  | `i18next`                  | 26.4.0          | Internationalization           |
+  | `react-i18next`            | 17.0.12         | React i18n integration         |
+  | `lucide-react`             | 1.38.0          | Icons                          |
   | `postgres`                 | 3.4.9           | PostgreSQL driver (Hyperdrive) |
   | `bcryptjs`                 | 3.0.3           | Password hashing               |
   | `dotenv`                   | 17.4.2          | Env var loading for scripts    |
-  | `isbot`                    | 5.2.1           | Bot detection (SSR rendering)  |
-  | `@cloudflare/workers-types`| 5.20260813.1    | Cloudflare Workers type defs   |
+  | `isbot`                    | 5.2.2           | Bot detection (SSR rendering)  |
+  | `@cloudflare/workers-types`| 5.20260831.1    | Cloudflare Workers type defs   |
 
   ### Key NPM Packages (Development)
 
   | Package                        | Version   | Purpose                          |
   | ------------------------------ | --------- | -------------------------------- |
   | `typescript`                   | 7.0.2     | Type checking                    |
-  | `@biomejs/biome`               | 2.5.8     | Formatting + linting             |
+  | `@biomejs/biome`               | 2.5.11    | Formatting + linting             |
   | `tailwindcss`                  | 4.3.3     | Utility CSS                      |
   | `@tailwindcss/vite`            | 4.3.3     | TailwindCSS Vite plugin          |
-  | `daisyui`                      | 5.7.16    | UI components                    |
-  | `vite`                         | 8.2.1     | Build tool                       |
-  | `@cloudflare/vite-plugin`      | 1.52.0    | Cloudflare Workers Vite plugin   |
-  | `@react-router/dev`            | 8.3.0     | React Router build tooling       |
-  | `@cloudflare/vitest-pool-workers` | 0.21.2 | Vitest workers pool for CF tests |
-  | `vitest`                       | 4.1.10    | Testing framework                |
-  | `@vitest/coverage-v8`          | 4.1.10    | Coverage provider (90% enforced) |
-  | `@vitejs/plugin-react`         | 6.0.5     | React plugin for Vite/Vitest     |
-  | `@testing-library/react`       | 16.3.2    | Component testing                |
+  | `daisyui`                      | 5.7.22    | UI components                    |
+  | `vite`                         | 8.2.2     | Build tool                       |
+  | `@cloudflare/vite-plugin`      | 1.54.2    | Cloudflare Workers Vite plugin   |
+  | `@react-router/dev`            | 8.3.1     | React Router build tooling       |
+  | `@cloudflare/vitest-pool-workers` | 0.22.0 | Vitest workers pool for CF tests |
+  | `vitest`                       | 4.1.11    | Testing framework                |
+  | `@vitest/coverage-v8`          | 4.1.11    | Coverage provider (90% enforced) |
+  | `@vitejs/plugin-react`         | 6.1.1     | React plugin for Vite/Vitest     |
+  | `@testing-library/react`       | 16.3.3    | Component testing                |
   | `@testing-library/jest-dom`    | 7.0.1     | DOM matchers                     |
+  | `@types/node`                  | 26.4.0    | Node.js type definitions         |
+  | `@types/pg`                    | 8.23.1    | PostgreSQL type definitions      |
+  | `@types/react`                 | 19.2.18   | React type definitions           |
+  | `@types/react-dom`             | 19.2.5    | React DOM type definitions       |
   | `jsdom`                        | 30.0.1    | DOM environment for tests        |
   | `@playwright/test`             | 1.62.1    | E2E testing                      |
   | `drizzle-kit`                  | 0.31.10   | Migration generation             |
-  | `tsx`                          | 4.23.12   | TypeScript script runner         |
-  | `wrangler`                     | 4.122.0   | Cloudflare Workers CLI           |
+  | `tsx`                          | 4.23.13   | TypeScript script runner         |
+  | `wrangler`                     | 4.127.1   | Cloudflare Workers CLI           |
 
   ### External Documentation
 
@@ -1515,11 +1519,13 @@ rules:
   tasks:
     - "Break tasks into atomic, verifiable chunks (max 2 hours)"
     - "Include file paths and command examples"
-    - "Specify test coverage requirements (unit, integration, E2E) — minimum 90% enforced"
+    - "Specify test coverage requirements (unit, integration, E2E) — minimum 90%
+      enforced"
     - "Define clear acceptance criteria"
     - "Include i18n translation key additions when UI text changes"
     - "Reference DaisyUI components and TailwindCSS patterns for UI tasks"
-    - "E2E test tasks MUST specify the `from Playwright-E2E` data prefix convention"
+    - "E2E test tasks MUST specify the `from Playwright-E2E` data prefix
+      convention"
 
   spec:
     - "Must be the source of truth for the capability"
@@ -1530,3 +1536,5 @@ rules:
     - "Document accessibility requirements met"
     - "Document CSRF and CORS behavior for all mutation endpoints"
     - "Document E2E test data prefix convention adherence"
+githubCopilot:
+  cloudAgent: true
